@@ -13,12 +13,12 @@ install:  ## Install every extra and the dev tools
 	$(RUN) pre-commit install
 
 lint:  ## Ruff lint + format check
-	$(RUN) ruff check src tests scripts demo
-	$(RUN) ruff format --check src tests scripts demo
+	$(RUN) ruff check src tests scripts demo examples
+	$(RUN) ruff format --check src tests scripts demo examples
 
 format:  ## Auto-format
-	$(RUN) ruff format src tests scripts demo
-	$(RUN) ruff check --fix src tests scripts demo
+	$(RUN) ruff format src tests scripts demo examples
+	$(RUN) ruff check --fix src tests scripts demo examples
 
 typecheck:  ## mypy (strict)
 	$(RUN) mypy

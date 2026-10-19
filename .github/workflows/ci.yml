@@ -25,8 +25,8 @@ jobs:
       - run: uv sync --all-extras
       - name: ruff
         run: |
-          uv run ruff check src tests scripts demo
-          uv run ruff format --check src tests scripts demo
+          uv run ruff check src tests scripts demo examples
+          uv run ruff format --check src tests scripts demo examples
       - name: mypy
         run: uv run mypy
 
