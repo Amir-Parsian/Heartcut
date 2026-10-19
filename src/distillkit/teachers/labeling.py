@@ -300,38 +300,52 @@ def soft_label_matrix(votes: Sequence[str], labels: Sequence[str]) -> np.ndarray
 
 
 def dry_run_estimate(cfg: ExperimentConfig, splits: Sequence[str] = SPLITS) -> dict[str, Any]:
-    """Rough cost range before spending anything (about 4 characters per token)."""
+    """Rough cost range before spending anything (about 4 characters per token).
+
+    ``low``/``high`` bracket the output side: a ~12-token JSON answer vs. every call using
+    ``max_output_tokens`` (thinking models spend output tokens before answering). When
+    the price table has a cache-read rate, ``low_cached_usd`` also assumes the shared
+    system prompt is served from the provider's prompt cache after the first call.
+    """
     data = load_prepared(cfg)
     template = PromptTemplate.from_file(cfg.teacher.prompt)
     pricing = resolve_pricing(cfg.teacher)
     system = template.render_system(data.labels, cfg.dataset.task, cfg.dataset.oos_label)
+    system_tokens = len(system) / 4
     k = cfg.teacher.self_consistency
     out: dict[str, Any] = {"teacher": cfg.teacher.name, "model": cfg.teacher.model, "splits": {}}
-    total_low = total_high = 0.0
+    totals = {"low_usd": 0.0, "low_cached_usd": 0.0, "high_usd": 0.0}
     for split in splits:
         frame = data.split(split)
-        user_chars = frame[TEXT].str.len().mean() + len(template.user)
-        input_tokens = (len(system) + user_chars) / 4
+        user_tokens = (frame[TEXT].str.len().mean() + len(template.user)) / 4
         calls = len(frame) * k
         entry: dict[str, Any] = {
             "examples": len(frame),
             "calls": calls,
-            "input_tokens_per_call": round(input_tokens),
+            "input_tokens_per_call": round(system_tokens + user_tokens),
         }
         if pricing is not None:
-            # Low: a ~12-token JSON answer. High: every call uses max_output_tokens
-            # (thinking models can spend output tokens before they answer).
-            low = estimate_cost(calls, input_tokens, 12, pricing)
-            high = estimate_cost(calls, input_tokens, cfg.teacher.max_output_tokens, pricing)
-            entry.update(low_usd=round(low, 2), high_usd=round(high, 2))
-            total_low += low
-            total_high += high
+            low = estimate_cost(calls, system_tokens + user_tokens, 12, pricing)
+            high = estimate_cost(
+                calls, system_tokens + user_tokens, cfg.teacher.max_output_tokens, pricing
+            )
+            cached = low
+            if pricing.cache_read is not None:
+                cached = estimate_cost(calls, user_tokens, 12, pricing) + (
+                    calls * system_tokens * pricing.cache_read / 1_000_000
+                )
+            entry.update(
+                low_usd=round(low, 2), low_cached_usd=round(cached, 2), high_usd=round(high, 2)
+            )
+            totals["low_usd"] += low
+            totals["low_cached_usd"] += cached
+            totals["high_usd"] += high
         out["splits"][split] = entry
     if pricing is not None:
-        out["total"] = {"low_usd": round(total_low, 2), "high_usd": round(total_high, 2)}
+        out["total"] = {key: round(value, 2) for key, value in totals.items()}
         out["note"] = (
-            "Ignores prompt caching (which lowers the input cost) and assumes 4 characters "
-            "per token."
+            "Assumes 4 characters per token. low: short JSON answers; high: every call uses "
+            "max_output_tokens; low_cached: low with the system prompt read from the cache."
         )
     else:
         out["note"] = "No price known for this model."

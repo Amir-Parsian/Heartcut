@@ -3,7 +3,7 @@ EXPERIMENT ?= configs/experiments/banking77.yaml
 RUN = uv run
 
 .PHONY: help install lint format typecheck test test-fast data label label-dry-run audit train \
-        benchmark report export serve docker demo smoke clean
+        labels-pull benchmark report export serve docker demo smoke clean
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -43,6 +43,9 @@ audit:  ## Teacher label quality vs. hidden human labels
 
 train:  ## Train every student x budget x seed
 	$(RUN) distillkit train -c $(EXPERIMENT)
+
+labels-pull:  ## Fetch published teacher labels (LABELS_REPO=<user/dataset>)
+	$(RUN) distillkit labels pull -c $(EXPERIMENT) --repo-id $(LABELS_REPO)
 
 benchmark:  ## Regenerate every number and chart from cached teacher labels (no API spend)
 	$(RUN) distillkit run -c $(EXPERIMENT) --offline

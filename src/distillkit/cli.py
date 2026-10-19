@@ -71,6 +71,46 @@ def _version_callback(value: bool) -> None:
         raise typer.Exit
 
 
+labels_app = typer.Typer(no_args_is_help=True, help="Publish or fetch cached teacher labels.")
+app.add_typer(labels_app, name="labels")
+
+RepoOpt = Annotated[
+    str, typer.Option(help="Hugging Face dataset repo, e.g. user/distillkit-labels.")
+]
+
+
+@labels_app.command("push")
+def labels_push(
+    config: ConfigOpt,
+    repo_id: RepoOpt,
+    set_: SetOpt = None,
+    public: Annotated[bool, typer.Option(help="Create the repo as public.")] = False,
+    verbose: VerboseOpt = False,
+) -> None:
+    """Upload teacher labels (never the hidden human labels) to the Hugging Face Hub."""
+    from distillkit.teachers.hub import publish_labels
+
+    cfg = _load(config, set_, verbose)
+    typer.echo(publish_labels(cfg, repo_id, private=not public))
+
+
+@labels_app.command("pull")
+def labels_pull(
+    config: ConfigOpt,
+    repo_id: RepoOpt,
+    set_: SetOpt = None,
+    revision: str | None = None,
+    verbose: VerboseOpt = False,
+) -> None:
+    """Download published teacher labels that match this config's fingerprint."""
+    from distillkit.data.prepare import prepare_data
+    from distillkit.teachers.hub import fetch_labels
+
+    cfg = _load(config, set_, verbose)
+    prepare_data(cfg)
+    typer.echo(str(fetch_labels(cfg, repo_id, revision=revision)))
+
+
 @app.callback()
 def main(
     version: Annotated[
