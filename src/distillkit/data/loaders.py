@@ -13,12 +13,15 @@ from __future__ import annotations
 
 import hashlib
 import importlib
+import importlib.util
 import json
 import logging
 import shutil
+import sys
 import urllib.request
 from collections.abc import Callable, Mapping
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 import pandas as pd
@@ -53,17 +56,41 @@ def available_loaders() -> list[str]:
 
 
 def resolve_loader(spec: str) -> Loader:
-    """Return the loader registered as ``spec`` or importable as ``module:function``."""
+    """Return the loader registered as ``spec`` or importable from ``spec``.
+
+    ``spec`` is a built-in name (``csv``), a module path (``my_pkg.loaders:load``) or a
+    Python file (``tasks/tickets/loader.py:load_tickets``, relative to the working
+    directory). Module paths are also looked up from the working directory, so a loader
+    can live in the project without being installed.
+    """
     if spec in _REGISTRY:
         return _REGISTRY[spec]
-    if ":" in spec:
-        module_name, _, attr = spec.partition(":")
-        module = importlib.import_module(module_name)
-        fn = getattr(module, attr, None)
-        if not callable(fn):
-            raise ValueError(f"{spec!r} does not name a callable")
-        return fn  # type: ignore[no-any-return]
-    raise ValueError(f"unknown loader {spec!r}; built-ins: {available_loaders()}")
+    if ":" not in spec:
+        raise ValueError(f"unknown loader {spec!r}; built-ins: {available_loaders()}")
+    target, _, attr = spec.rpartition(":")
+    if target.endswith(".py"):
+        module = _module_from_file(Path(target))
+    else:
+        cwd = str(Path.cwd())
+        if cwd not in sys.path:
+            sys.path.append(cwd)
+        module = importlib.import_module(target)
+    fn = getattr(module, attr, None)
+    if not callable(fn):
+        raise ValueError(f"{spec!r} does not name a callable")
+    return fn  # type: ignore[no-any-return]
+
+
+def _module_from_file(path: Path) -> ModuleType:
+    if not path.exists():
+        raise FileNotFoundError(path)
+    name = f"distillkit_user_loader_{hashlib.sha256(str(path.resolve()).encode()).hexdigest()[:8]}"
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"cannot import {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def normalise_split_name(name: str) -> str:

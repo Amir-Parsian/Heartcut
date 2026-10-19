@@ -1,0 +1,120 @@
+{"ticket_id": "T1060", "subject": "Update failed", "body": "Hi team, The software update keeps failing with an error. Thank you!", "queue": "software_install"}
+{"ticket_id": "T1030", "subject": "VPN certificate", "body": "The VPN shows a certificate error since the update.", "queue": "vpn_issue"}
+{"ticket_id": "T1116", "subject": "Remove access", "body": "Hi team, Please remove access for an employee who left last week. Please help.", "queue": "access_request"}
+{"ticket_id": "T1079", "subject": "Admin rights", "body": "Urgent: I can't install the printer driver without admin rights. Thank you!", "queue": "software_install"}
+{"ticket_id": "T1097", "subject": "Shared mailbox", "body": "Quick question - I need access to the team's shared mailbox. Thanks.", "queue": "email_problem"}
+{"ticket_id": "T1022", "subject": "Slow VPN", "body": "Quick question - Everything is very slow once I connect to the VPN.", "queue": "vpn_issue"}
+{"ticket_id": "T1102", "subject": "New starter", "body": "Quick question - A new colleague starts Monday and needs accounts set up. Ticket from the London office.", "queue": "access_request"}
+{"ticket_id": "T1021", "subject": "VPN certificate", "body": "Hello, The VPN shows a certificate error since the update. Please help.", "queue": "vpn_issue"}
+{"ticket_id": "T1105", "subject": "New starter", "body": "Urgent: A new colleague starts Monday and needs accounts set up. Ticket from the London office.", "queue": "access_request"}
+{"ticket_id": "T1048", "subject": "Broken keyboard", "body": "Quick question - Several keys on my keyboard stopped working. Ticket from the London office.", "queue": "hardware_request"}
+{"ticket_id": "T1108", "subject": "Remove access", "body": "Please remove access for an employee who left last week. Ticket from the London office.", "queue": "access_request"}
+{"ticket_id": "T1077", "subject": "Install request", "body": "Hello, Please install the data analysis tool on my machine. Please help.", "queue": "software_install"}
+{"ticket_id": "T1101", "subject": "Remove access", "body": "Quick question - Please remove access for an employee who left last week. Thanks.", "queue": "access_request"}
+{"ticket_id": "T1024", "subject": "No VPN access", "body": "Hello, The VPN client says my account is not authorised. Thanks.", "queue": "vpn_issue"}
+{"ticket_id": "T1035", "subject": "VPN certificate", "body": "The VPN shows a certificate error since the update. Thanks.", "queue": "vpn_issue"}
+{"ticket_id": "T1006", "subject": "Locked out", "body": "Quick question - I forgot my password and the reset email never arrives. Please help.", "queue": "password_reset"}
+{"ticket_id": "T1094", "subject": "Mail not syncing", "body": "Quick question - My inbox has not synced on my phone since yesterday. Thanks.", "queue": "email_problem"}
+{"ticket_id": "T1074", "subject": "License needed", "body": "Hi team, I need a license for the design software. Please help.", "queue": "software_install"}
+{"ticket_id": "T1026", "subject": "VPN keeps dropping", "body": "Quick question - The VPN disconnects every few minutes when I work from home. Ticket from the London office.", "queue": "vpn_issue"}
+{"ticket_id": "T1092", "subject": "Spam", "body": "Hello, I keep receiving suspicious emails asking for my password. Thanks.", "queue": "email_problem"}
+{"ticket_id": "T1088", "subject": "Spam", "body": "Urgent: I keep receiving suspicious emails asking for my password. Please help.", "queue": "email_problem"}
+{"ticket_id": "T1057", "subject": "Second monitor", "body": "Quick question - I would like a second monitor for my desk.", "queue": "hardware_request"}
+{"ticket_id": "T1068", "subject": "Admin rights", "body": "Hi team, I can't install the printer driver without admin rights. Ticket from the London office.", "queue": "software_install"}
+{"ticket_id": "T1039", "subject": "VPN certificate", "body": "Quick question - The VPN shows a certificate error since the update. Thank you!", "queue": "vpn_issue"}
+{"ticket_id": "T1103", "subject": "Folder access", "body": "Urgent: Please give me access to the finance shared drive. Thanks.", "queue": "access_request"}
+{"ticket_id": "T1113", "subject": "New starter", "body": "Hello, A new colleague starts Monday and needs accounts set up. Please help.", "queue": "access_request"}
+{"ticket_id": "T1073", "subject": "Admin rights", "body": "Hi team, I can't install the printer driver without admin rights. Ticket from the London office.", "queue": "software_install"}
+{"ticket_id": "T1111", "subject": "Remove access", "body": "Quick question - Please remove access for an employee who left last week.", "queue": "access_request"}
+{"ticket_id": "T1087", "subject": "Spam", "body": "Hello, I keep receiving suspicious emails asking for my password.", "queue": "email_problem"}
+{"ticket_id": "T1069", "subject": "Install request", "body": "Quick question - Please install the data analysis tool on my machine. Thank you!", "queue": "software_install"}
+{"ticket_id": "T1000", "subject": "Can't log in", "body": "Hi team, It says my credentials are wrong even though I just changed them. Please help.", "queue": "password_reset"}
+{"ticket_id": "T1071", "subject": "Admin rights", "body": "Hi team, I can't install the printer driver without admin rights. Thank you!", "queue": "software_install"}
+{"ticket_id": "T1007", "subject": "Locked out", "body": "Quick question - I forgot my password and the reset email never arrives.", "queue": "password_reset"}
+{"ticket_id": "T1075", "subject": "License needed", "body": "Hi team, I need a license for the design software. Ticket from the London office.", "queue": "software_install"}
+{"ticket_id": "T1041", "subject": "Broken keyboard", "body": "Urgent: Several keys on my keyboard stopped working. Thank you!", "queue": "hardware_request"}
+{"ticket_id": "T1072", "subject": "License needed", "body": "Quick question - I need a license for the design software. Ticket from the London office.", "queue": "software_install"}
+{"ticket_id": "T1118", "subject": "Repo access", "body": "I need read access to the analytics repository. Thanks.", "queue": "access_request"}
+{"ticket_id": "T1080", "subject": "Shared mailbox", "body": "I need access to the team's shared mailbox. Thanks.", "queue": "email_problem"}
+{"ticket_id": "T1047", "subject": "Second monitor", "body": "Urgent: I would like a second monitor for my desk. Ticket from the London office.", "queue": "hardware_request"}
+{"ticket_id": "T1001", "subject": "Locked out", "body": "I forgot my password and the reset email never arrives. Ticket from the London office.", "queue": "password_reset"}
+{"ticket_id": "T1098", "subject": "Shared mailbox", "body": "Hello, I need access to the team's shared mailbox. Ticket from the London office.", "queue": "email_problem"}
+{"ticket_id": "T1004", "subject": "Locked out", "body": "I forgot my password and the reset email never arrives. Please help.", "queue": "password_reset"}
+{"ticket_id": "T1061", "subject": "Admin rights", "body": "Quick question - I can't install the printer driver without admin rights. Thank you!", "queue": "software_install"}
+{"ticket_id": "T1086", "subject": "Mailbox full", "body": "Urgent: I get warnings that my mailbox is full. Thanks.", "queue": "email_problem"}
+{"ticket_id": "T1078", "subject": "Admin rights", "body": "Hi team, I can't install the printer driver without admin rights. Ticket from the London office.", "queue": "software_install"}
+{"ticket_id": "T1003", "subject": "Locked out", "body": "Quick question - I forgot my password and the reset email never arrives. Thanks.", "queue": "password_reset"}
+{"ticket_id": "T1106", "subject": "Folder access", "body": "Quick question - Please give me access to the finance shared drive.", "queue": "access_request"}
+{"ticket_id": "T1076", "subject": "Update failed", "body": "Hello, The software update keeps failing with an error.", "queue": "software_install"}
+{"ticket_id": "T1096", "subject": "Mail not syncing", "body": "Hello, My inbox has not synced on my phone since yesterday. Thanks.", "queue": "email_problem"}
+{"ticket_id": "T1044", "subject": "Second monitor", "body": "Hi team, I would like a second monitor for my desk.", "queue": "hardware_request"}
+{"ticket_id": "T1031", "subject": "Slow VPN", "body": "Quick question - Everything is very slow once I connect to the VPN. Please help.", "queue": "vpn_issue"}
+{"ticket_id": "T1036", "subject": "Slow VPN", "body": "Hi team, Everything is very slow once I connect to the VPN. Thanks.", "queue": "vpn_issue"}
+{"ticket_id": "T1107", "subject": "Repo access", "body": "Quick question - I need read access to the analytics repository. Ticket from the London office.", "queue": "access_request"}
+{"ticket_id": "T1064", "subject": "Update failed", "body": "Hello, The software update keeps failing with an error.", "queue": "software_install"}
+{"ticket_id": "T1009", "subject": "MFA reset", "body": "I got a new phone and lost my authenticator codes. Thanks.", "queue": "password_reset"}
+{"ticket_id": "T1089", "subject": "Mail not syncing", "body": "Hi team, My inbox has not synced on my phone since yesterday. Thanks.", "queue": "email_problem"}
+{"ticket_id": "T1063", "subject": "Update failed", "body": "Urgent: The software update keeps failing with an error. Please help.", "queue": "software_install"}
+{"ticket_id": "T1117", "subject": "Folder access", "body": "Urgent: Please give me access to the finance shared drive. Please help.", "queue": "access_request"}
+{"ticket_id": "T1083", "subject": "Spam", "body": "Quick question - I keep receiving suspicious emails asking for my password. Ticket from the London office.", "queue": "email_problem"}
+{"ticket_id": "T1081", "subject": "Mail not syncing", "body": "Hi team, My inbox has not synced on my phone since yesterday. Please help.", "queue": "email_problem"}
+{"ticket_id": "T1054", "subject": "New laptop", "body": "Hi team, My laptop is five years old, can I request a replacement? Please help.", "queue": "hardware_request"}
+{"ticket_id": "T1027", "subject": "Slow VPN", "body": "Hello, Everything is very slow once I connect to the VPN. Thank you!", "queue": "vpn_issue"}
+{"ticket_id": "T1052", "subject": "Headset", "body": "I need a headset for calls, who do I ask? Please help.", "queue": "hardware_request"}
+{"ticket_id": "T1016", "subject": "Password expired", "body": "Urgent: My password expired this morning, how do I set a new one? Ticket from the London office.", "queue": "password_reset"}
+{"ticket_id": "T1067", "subject": "Install request", "body": "Hi team, Please install the data analysis tool on my machine. Ticket from the London office.", "queue": "software_install"}
+{"ticket_id": "T1023", "subject": "VPN keeps dropping", "body": "Quick question - The VPN disconnects every few minutes when I work from home. Please help.", "queue": "vpn_issue"}
+{"ticket_id": "T1005", "subject": "MFA reset", "body": "I got a new phone and lost my authenticator codes. Thanks.", "queue": "password_reset"}
+{"ticket_id": "T1034", "subject": "No VPN access", "body": "Quick question - The VPN client says my account is not authorised.", "queue": "vpn_issue"}
+{"ticket_id": "T1033", "subject": "VPN keeps dropping", "body": "Urgent: The VPN disconnects every few minutes when I work from home. Thank you!", "queue": "vpn_issue"}
+{"ticket_id": "T1010", "subject": "Locked out", "body": "Quick question - I forgot my password and the reset email never arrives. Thanks.", "queue": "password_reset"}
+{"ticket_id": "T1013", "subject": "Password expired", "body": "My password expired this morning, how do I set a new one? Ticket from the London office.", "queue": "password_reset"}
+{"ticket_id": "T1029", "subject": "VPN keeps dropping", "body": "The VPN disconnects every few minutes when I work from home. Thank you!", "queue": "vpn_issue"}
+{"ticket_id": "T1014", "subject": "Password expired", "body": "Hello, My password expired this morning, how do I set a new one?", "queue": "password_reset"}
+{"ticket_id": "T1008", "subject": "Password expired", "body": "Quick question - My password expired this morning, how do I set a new one?", "queue": "password_reset"}
+{"ticket_id": "T1093", "subject": "Mailbox full", "body": "I get warnings that my mailbox is full.", "queue": "email_problem"}
+{"ticket_id": "T1037", "subject": "VPN certificate", "body": "Urgent: The VPN shows a certificate error since the update. Please help.", "queue": "vpn_issue"}
+{"ticket_id": "T1066", "subject": "Admin rights", "body": "Urgent: I can't install the printer driver without admin rights. Thanks.", "queue": "software_install"}
+{"ticket_id": "T1042", "subject": "Headset", "body": "Hi team, I need a headset for calls, who do I ask? Thanks.", "queue": "hardware_request"}
+{"ticket_id": "T1049", "subject": "Broken keyboard", "body": "Hi team, Several keys on my keyboard stopped working. Ticket from the London office.", "queue": "hardware_request"}
+{"ticket_id": "T1110", "subject": "Repo access", "body": "I need read access to the analytics repository.", "queue": "access_request"}
+{"ticket_id": "T1056", "subject": "New laptop", "body": "My laptop is five years old, can I request a replacement?", "queue": "hardware_request"}
+{"ticket_id": "T1058", "subject": "Broken keyboard", "body": "Quick question - Several keys on my keyboard stopped working.", "queue": "hardware_request"}
+{"ticket_id": "T1070", "subject": "Install request", "body": "Hello, Please install the data analysis tool on my machine. Ticket from the London office.", "queue": "software_install"}
+{"ticket_id": "T1112", "subject": "Folder access", "body": "Urgent: Please give me access to the finance shared drive. Thank you!", "queue": "access_request"}
+{"ticket_id": "T1002", "subject": "Locked out", "body": "Hello, I forgot my password and the reset email never arrives. Ticket from the London office.", "queue": "password_reset"}
+{"ticket_id": "T1109", "subject": "Folder access", "body": "Hi team, Please give me access to the finance shared drive. Thanks.", "queue": "access_request"}
+{"ticket_id": "T1011", "subject": "Can't log in", "body": "Urgent: It says my credentials are wrong even though I just changed them. Thanks.", "queue": "password_reset"}
+{"ticket_id": "T1040", "subject": "Second monitor", "body": "Urgent: I would like a second monitor for my desk. Ticket from the London office.", "queue": "hardware_request"}
+{"ticket_id": "T1045", "subject": "Headset", "body": "Quick question - I need a headset for calls, who do I ask? Thanks.", "queue": "hardware_request"}
+{"ticket_id": "T1025", "subject": "VPN certificate", "body": "Urgent: The VPN shows a certificate error since the update.", "queue": "vpn_issue"}
+{"ticket_id": "T1053", "subject": "Headset", "body": "I need a headset for calls, who do I ask? Thanks.", "queue": "hardware_request"}
+{"ticket_id": "T1043", "subject": "New laptop", "body": "Hi team, My laptop is five years old, can I request a replacement? Thanks.", "queue": "hardware_request"}
+{"ticket_id": "T1051", "subject": "Headset", "body": "Urgent: I need a headset for calls, who do I ask? Please help.", "queue": "hardware_request"}
+{"ticket_id": "T1065", "subject": "License needed", "body": "I need a license for the design software. Thank you!", "queue": "software_install"}
+{"ticket_id": "T1055", "subject": "Second monitor", "body": "I would like a second monitor for my desk. Thank you!", "queue": "hardware_request"}
+{"ticket_id": "T1090", "subject": "Mailbox full", "body": "I get warnings that my mailbox is full. Thanks.", "queue": "email_problem"}
+{"ticket_id": "T1115", "subject": "Repo access", "body": "Quick question - I need read access to the analytics repository. Thanks.", "queue": "access_request"}
+{"ticket_id": "T1104", "subject": "Folder access", "body": "Hi team, Please give me access to the finance shared drive. Thanks.", "queue": "access_request"}
+{"ticket_id": "T1119", "subject": "Remove access", "body": "Please remove access for an employee who left last week. Thanks.", "queue": "access_request"}
+{"ticket_id": "T1020", "subject": "VPN keeps dropping", "body": "Quick question - The VPN disconnects every few minutes when I work from home. Thank you!", "queue": "vpn_issue"}
+{"ticket_id": "T1062", "subject": "Update failed", "body": "The software update keeps failing with an error.", "queue": "software_install"}
+{"ticket_id": "T1050", "subject": "New laptop", "body": "Urgent: My laptop is five years old, can I request a replacement? Ticket from the London office.", "queue": "hardware_request"}
+{"ticket_id": "T1012", "subject": "Locked out", "body": "Quick question - I forgot my password and the reset email never arrives. Thank you!", "queue": "password_reset"}
+{"ticket_id": "T1095", "subject": "Spam", "body": "Hi team, I keep receiving suspicious emails asking for my password. Thanks.", "queue": "email_problem"}
+{"ticket_id": "T1028", "subject": "VPN certificate", "body": "Quick question - The VPN shows a certificate error since the update. Please help.", "queue": "vpn_issue"}
+{"ticket_id": "T1059", "subject": "New laptop", "body": "Hi team, My laptop is five years old, can I request a replacement? Ticket from the London office.", "queue": "hardware_request"}
+{"ticket_id": "T1017", "subject": "MFA reset", "body": "Hello, I got a new phone and lost my authenticator codes. Please help.", "queue": "password_reset"}
+{"ticket_id": "T1032", "subject": "Slow VPN", "body": "Urgent: Everything is very slow once I connect to the VPN. Thank you!", "queue": "vpn_issue"}
+{"ticket_id": "T1018", "subject": "MFA reset", "body": "Hello, I got a new phone and lost my authenticator codes. Thank you!", "queue": "password_reset"}
+{"ticket_id": "T1046", "subject": "Broken keyboard", "body": "Hello, Several keys on my keyboard stopped working.", "queue": "hardware_request"}
+{"ticket_id": "T1084", "subject": "Mail not syncing", "body": "Urgent: My inbox has not synced on my phone since yesterday. Thank you!", "queue": "email_problem"}
+{"ticket_id": "T1082", "subject": "Mailbox full", "body": "Hello, I get warnings that my mailbox is full. Thanks.", "queue": "email_problem"}
+{"ticket_id": "T1091", "subject": "Spam", "body": "Hi team, I keep receiving suspicious emails asking for my password. Ticket from the London office.", "queue": "email_problem"}
+{"ticket_id": "T1019", "subject": "Password expired", "body": "Hi team, My password expired this morning, how do I set a new one? Thanks.", "queue": "password_reset"}
+{"ticket_id": "T1099", "subject": "Spam", "body": "Hi team, I keep receiving suspicious emails asking for my password.", "queue": "email_problem"}
+{"ticket_id": "T1114", "subject": "Remove access", "body": "Quick question - Please remove access for an employee who left last week. Thanks.", "queue": "access_request"}
+{"ticket_id": "T1015", "subject": "Locked out", "body": "Quick question - I forgot my password and the reset email never arrives.", "queue": "password_reset"}
+{"ticket_id": "T1100", "subject": "Repo access", "body": "Urgent: I need read access to the analytics repository. Ticket from the London office.", "queue": "access_request"}
+{"ticket_id": "T1038", "subject": "VPN keeps dropping", "body": "Hi team, The VPN disconnects every few minutes when I work from home. Please help.", "queue": "vpn_issue"}
+{"ticket_id": "T1085", "subject": "Mail not syncing", "body": "My inbox has not synced on my phone since yesterday. Please help.", "queue": "email_problem"}

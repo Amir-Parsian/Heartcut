@@ -1,0 +1,12 @@
+# Example custom task: route IT-helpdesk tickets to one of six queues.
+# The data is synthetic (examples/helpdesk/tickets.jsonl) and only shows the mechanics.
+name: helpdesk
+description: Synthetic IT-helpdesk tickets routed to six support queues.
+task: routing IT-helpdesk tickets (subject and body) to the right support queue
+validation_fraction: 0.2
+seed: 13
+sources:
+  - loader: examples/helpdesk/loader.py:load_tickets
+    args:
+      path: examples/helpdesk/tickets.jsonl
+      test_fraction: 0.25
