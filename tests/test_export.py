@@ -148,3 +148,34 @@ def test_best_student_selection_uses_validation_only(make_experiment) -> None:  
         best_student_name(cfg, [])
     with pytest.raises(ValueError):
         best_seed(records, "missing")
+
+
+@pytest.mark.slow
+def test_distilbert_architecture_exports(tmp_path: Path) -> None:
+    """distilbert-base-uncased has no token_type_ids and its own attention code."""
+    pytest.importorskip("onnxruntime")
+    from tests.tiny_models import build_tiny_distilbert
+
+    model_dir = build_tiny_distilbert(tmp_path / "distilbert")
+    config = EncoderStudentConfig(name="e", params={"model_name": str(model_dir), "epochs": 1})
+    student = _trained(config)
+    meta = export_student(student, tmp_path / "export", TEXTS * 4)
+    assert meta["verification"]["fp32_max_abs_diff"] < 1e-3
+    predictor = load_predictor(tmp_path / "export", threads=1)
+    assert "token_type_ids" not in predictor.input_names  # type: ignore[attr-defined]
+
+
+@pytest.mark.slow
+def test_normalized_sentence_transformer_exports(tmp_path: Path) -> None:
+    """all-MiniLM-L6-v2 ends with a Normalize module, which the export must fuse."""
+    pytest.importorskip("onnxruntime")
+    from tests.tiny_models import build_tiny_normalized_sentence_transformer
+
+    model_dir = build_tiny_normalized_sentence_transformer(tmp_path / "st-norm")
+    config = SetFitStudentConfig(
+        name="s",
+        params={"model_name": str(model_dir), "max_pairs": 32, "normalize_embeddings": False},
+    )
+    student = _trained(config)
+    meta = export_student(student, tmp_path / "export", TEXTS * 4)
+    assert meta["verification"]["fp32_max_abs_diff"] < 1e-3

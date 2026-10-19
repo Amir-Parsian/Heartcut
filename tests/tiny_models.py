@@ -61,3 +61,47 @@ def build_tiny_sentence_transformer(directory: Path) -> Path:
     pooling = Pooling(transformer.get_embedding_dimension(), pooling_mode="mean")
     SentenceTransformer(modules=[transformer, pooling], device="cpu").save(str(directory))
     return directory
+
+
+def build_tiny_distilbert(directory: Path) -> Path:
+    """Same architecture family as ``distilbert-base-uncased`` (no token type ids)."""
+    from transformers import DistilBertConfig, DistilBertModel, DistilBertTokenizerFast
+
+    directory.mkdir(parents=True, exist_ok=True)
+    vocab_file = directory / "vocab.txt"
+    vocab_file.write_text("\n".join(_vocab()) + "\n", encoding="utf-8")
+    params = inspect.signature(DistilBertTokenizerFast.__init__).parameters
+    key = "vocab" if "vocab" in params else "vocab_file"
+    tokenizer = DistilBertTokenizerFast(**{key: str(vocab_file)}, do_lower_case=True)
+    config = DistilBertConfig(
+        vocab_size=tokenizer.vocab_size,
+        dim=32,
+        n_layers=2,
+        n_heads=2,
+        hidden_dim=64,
+        max_position_embeddings=64,
+    )
+    DistilBertModel(config).save_pretrained(directory)
+    tokenizer.save_pretrained(directory)
+    return directory
+
+
+def build_tiny_normalized_sentence_transformer(directory: Path) -> Path:
+    """Transformer -> mean pooling -> Normalize, the layout of all-MiniLM-L6-v2."""
+    from sentence_transformers import SentenceTransformer
+
+    try:  # sentence-transformers >= 5.x
+        from sentence_transformers.sentence_transformer.modules import (
+            Normalize,
+            Pooling,
+            Transformer,
+        )
+    except ImportError:  # pragma: no cover - older releases
+        from sentence_transformers.models import Normalize, Pooling, Transformer
+
+    bert = build_tiny_bert(directory.parent / f"{directory.name}-bert")
+    transformer = Transformer(str(bert), max_seq_length=32)
+    pooling = Pooling(transformer.get_embedding_dimension(), pooling_mode="mean")
+    model = SentenceTransformer(modules=[transformer, pooling, Normalize()], device="cpu")
+    model.save(str(directory))
+    return directory
