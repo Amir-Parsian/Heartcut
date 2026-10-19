@@ -66,3 +66,42 @@ def test_budget_cap_exit_code(tmp_path: Path, dataset_files: dict[str, Path]) ->
     )
     assert result.exit_code == 2
     assert "budget cap" in result.output
+
+
+def test_run_export_report_commands(tmp_path: Path, dataset_files: dict[str, Path]) -> None:
+    config = str(_config_file(tmp_path, dataset_files, seeds=[0], budgets=["full"]))
+    result = runner.invoke(app, ["run", "-c", config])
+    assert result.exit_code == 0, result.output
+    assert "tfidf:" in result.output
+
+    result = runner.invoke(app, ["benchmark", "-c", config, "--skip-latency"])
+    assert result.exit_code == 0, result.output
+
+    result = runner.invoke(app, ["export", "-c", config])
+    assert result.exit_code == 0, result.output
+    assert Path(result.output.strip().splitlines()[-1], "export.json").exists()
+
+    readme = tmp_path / "README.md"
+    readme.write_text("<!-- results:start -->\n<!-- results:end -->\n")
+    result = runner.invoke(app, ["report", "-c", config, "--readme", str(readme)])
+    assert result.exit_code == 4  # simulated teacher results are never published
+    assert "simulated" in result.output
+
+
+def test_report_check_detects_stale_readme(tmp_path: Path, dataset_files: dict[str, Path]) -> None:
+    import json
+
+    config = str(_config_file(tmp_path, dataset_files, seeds=[0], budgets=["full"]))
+    assert runner.invoke(app, ["run", "-c", config]).exit_code == 0
+    results_file = tmp_path / "results" / "support" / "results.json"
+    data = json.loads(results_file.read_text())
+    data["simulated"] = False  # pretend a real teacher produced it
+    results_file.write_text(json.dumps(data))
+    readme = tmp_path / "README.md"
+    readme.write_text("<!-- results:start -->\n<!-- results:end -->\n")
+
+    result = runner.invoke(app, ["report", "-c", config, "--readme", str(readme), "--check"])
+    assert result.exit_code == 1 and "out of date" in result.output
+    assert runner.invoke(app, ["report", "-c", config, "--readme", str(readme)]).exit_code == 0
+    result = runner.invoke(app, ["report", "-c", config, "--readme", str(readme), "--check"])
+    assert result.exit_code == 0 and "up to date" in result.output
