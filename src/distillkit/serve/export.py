@@ -217,8 +217,13 @@ def export_student(
     *,
     quantize: bool = True,
     opset: int = 17,
+    extra_meta: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Export ``student`` into ``directory`` and return the export metadata."""
+    """Export ``student`` into ``directory`` and return the export metadata.
+
+    ``extra_meta`` (for example the task description used by the fallback router) is
+    stored in ``export.json`` alongside the labels.
+    """
     if directory.exists():
         shutil.rmtree(directory)
     directory.mkdir(parents=True)
@@ -227,6 +232,7 @@ def export_student(
     else:
         meta = _export_onnx(student, directory, sample_texts, quantize=quantize, opset=opset)
     meta.update({"name": student.name, "kind": student.kind, "labels": student.labels})
+    meta.update(extra_meta or {})
     _write_meta(directory, meta)
     if meta["format"] == "onnx":
         meta["verification"] = verify_export(student, directory, sample_texts)
@@ -286,7 +292,17 @@ def run_export(
     samples = data.validation["text"].head(64).tolist()
     student = Student.load(source / MODEL_DIR)
     meta = export_student(
-        student, stage.path, samples, quantize=cfg.export.quantize, opset=cfg.export.opset
+        student,
+        stage.path,
+        samples,
+        quantize=cfg.export.quantize,
+        opset=cfg.export.opset,
+        extra_meta={
+            "task": cfg.dataset.task,
+            "oos_label": cfg.dataset.oos_label,
+            "experiment": cfg.name,
+            "seed": seed,
+        },
     )
     write_manifest(
         stage.path,

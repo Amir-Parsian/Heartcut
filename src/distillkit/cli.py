@@ -247,6 +247,36 @@ def report(
 
 
 @app.command()
+def serve(
+    model: Annotated[
+        Path, typer.Option(exists=True, file_okay=False, help="Exported model directory.")
+    ],
+    host: str = "127.0.0.1",
+    port: int = 8000,
+    threads: Annotated[int | None, typer.Option(help="ONNX Runtime intra-op threads.")] = None,
+    fallback_threshold: Annotated[
+        float | None, typer.Option(help="Route predictions below this confidence to the teacher.")
+    ] = None,
+    teacher_config: Annotated[
+        Path | None, typer.Option(help="Teacher YAML for the fallback router.")
+    ] = None,
+) -> None:
+    """Serve an exported student with FastAPI (POST /predict, GET /health)."""
+    import os
+
+    import uvicorn
+
+    os.environ["DISTILLKIT_MODEL_DIR"] = str(model)
+    if threads:
+        os.environ["DISTILLKIT_THREADS"] = str(threads)
+    if fallback_threshold is not None:
+        os.environ["DISTILLKIT_FALLBACK_THRESHOLD"] = str(fallback_threshold)
+    if teacher_config is not None:
+        os.environ["DISTILLKIT_TEACHER_CONFIG"] = str(teacher_config)
+    uvicorn.run("distillkit.serve.app:app_from_env", factory=True, host=host, port=port)
+
+
+@app.command()
 def run(
     config: ConfigOpt,
     set_: SetOpt = None,
