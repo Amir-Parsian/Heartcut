@@ -49,6 +49,9 @@ def test_benchmark_writes_every_output(results) -> None:  # type: ignore[no-unty
     assert load_results(directory) == json.loads((directory / RESULTS_JSON).read_text())
     assert res["simulated"] is True
     assert "SIMULATED TEACHER" in (directory / "results.md").read_text()
+    card = (directory / "MODEL_CARD.md").read_text()
+    assert "Known failure modes" in card and "Inherited teacher errors" not in card
+    assert "no out-of-scope class" in card
 
 
 def test_benchmark_rows(results) -> None:  # type: ignore[no-untyped-def]

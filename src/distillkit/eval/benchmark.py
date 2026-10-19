@@ -31,10 +31,15 @@ from distillkit.config import ExperimentConfig
 from distillkit.data.prepare import PreparedData, data_manifest, load_prepared
 from distillkit.data.schema import ID, LABEL, TEXT
 from distillkit.eval import charts
+from distillkit.eval.audit import load_audit
 from distillkit.eval.cost import blended_cost_per_1k, student_cost_per_1k, teacher_cost_per_1k
 from distillkit.eval.latency import measure_latency, measure_throughput
 from distillkit.eval.metrics import INVALID, confused_pairs, mean_std, score
-from distillkit.eval.report import render_error_analysis, render_results_markdown
+from distillkit.eval.report import (
+    render_error_analysis,
+    render_model_card,
+    render_results_markdown,
+)
 from distillkit.serve.export import best_seed, best_student_name, run_export
 from distillkit.serve.runtime import artifact_size_mb, load_predictor
 from distillkit.students.training import run_training
@@ -54,6 +59,7 @@ logger = logging.getLogger(__name__)
 RESULTS_JSON = "results.json"
 RESULTS_MD = "results.md"
 ERRORS_MD = "error_analysis.md"
+MODEL_CARD = "MODEL_CARD.md"
 PREDICT_BATCH = 256
 
 
@@ -170,6 +176,7 @@ def student_row(
         "label": name,
         "role": "student",
         "kind": student_cfg.kind,
+        "base_model": getattr(student_cfg.params, "model_name", None),
         "variant": "served: "
         + ("ONNX int8" if predictor.meta["format"] == "onnx" else "scikit-learn"),
         "accuracy": _stat([r["test"]["accuracy"] for r in runs]),
@@ -339,6 +346,7 @@ def run_benchmark(cfg: ExperimentConfig, *, measure: bool = True) -> dict[str, A
             "name": cfg.dataset.name,
             **data_manifest(cfg)["counts"],
             "labels": len(data.labels),
+            "oos_label": cfg.dataset.oos_label,
         },
         "seeds": len(cfg.seeds),
         "teacher": {
@@ -394,6 +402,8 @@ def write_results(cfg: ExperimentConfig, results: dict[str, Any]) -> dict[str, A
     (directory / RESULTS_JSON).write_text(json.dumps(public, indent=2) + "\n", encoding="utf-8")
     (directory / RESULTS_MD).write_text(render_results_markdown(public), encoding="utf-8")
     (directory / ERRORS_MD).write_text(render_error_analysis(public), encoding="utf-8")
+    audit = load_audit(labels_stage(cfg).path)
+    (directory / MODEL_CARD).write_text(render_model_card(public, audit), encoding="utf-8")
     logger.info("benchmark results written to %s", directory)
     return public
 

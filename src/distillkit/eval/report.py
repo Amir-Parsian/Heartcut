@@ -186,6 +186,97 @@ def render_error_analysis(results: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def render_model_card(results: dict[str, Any], audit: dict[str, Any] | None = None) -> str:
+    """Model card for the best student, filled from the benchmark (and audit) results."""
+    best = next(m for m in results["models"] if m["name"] == results["best_student"])
+    teacher = next(m for m in results["models"] if m["role"] == "teacher")
+    served = best["served"]
+    data = results["dataset"]
+    latency = best.get("latency") or {}
+    lines = [f"# Model card: {best['name']} ({results['experiment']})", ""]
+    if results.get("simulated"):
+        lines += [
+            "> **SIMULATED TEACHER.** Generated from a pipeline test run; not a real model.",
+            "",
+        ]
+    lines += [
+        "## Model details",
+        "",
+        f"- **Type:** {best['kind']} student ({best.get('base_model') or 'no pre-trained base'})"
+        f", served as {best['variant'].removeprefix('served: ')}, {fmt_mb(best['size_mb'])}.",
+        f"- **Trained on:** labels from the teacher LLM `{results['teacher']['model']}` "
+        f"(self-consistency samples: {results['teacher']['self_consistency']}); no human "
+        "labels were used for training or model selection.",
+        f"- **Selected by:** highest mean agreement with the teacher on a teacher-labeled "
+        f"validation set; seed {served['seed']} of {results['seeds']}.",
+        "- **Code license:** MIT. The base model and the source dataset keep their own licenses.",
+        "",
+        "## Intended use",
+        "",
+        f"Classifying short English messages into the {data['labels']} intents of "
+        f"{data['name']}, as a cheap, fast replacement for calling the teacher LLM. Pair it "
+        "with the fallback router (low-confidence predictions go to the teacher) where "
+        "errors are costly, and keep a human in the loop for consequential decisions.",
+        "",
+        "**Out of scope:** other languages or domains, long documents, intents outside the "
+        + (
+            f"label set (they should land in `{data['oos_label']}`, but check that class's "
+            "recall before relying on it)"
+            if data.get("oos_label")
+            else "label set (there is no out-of-scope class, so the model always picks one of "
+            "its known intents)"
+        )
+        + ", and any use where an automated misroute could cause harm without review.",
+        "",
+        "## Evaluation",
+        "",
+        f"Human-labeled test set: {data['test']:,} messages, never used for training or selection.",
+        "",
+        "| | Accuracy | Macro-F1 | ECE | Cost / 1k | Latency p50 / p95 |",
+        "|---|---:|---:|---:|---:|---:|",
+        f"| {best['name']} (served) | {fmt_pct(served['accuracy'])} "
+        f"| {fmt_pct(served['macro_f1'])} | {fmt_ece(served['ece'])} "
+        f"| {fmt_usd(best['cost_per_1k_usd'])} | {fmt_ms(latency.get('p50_ms'))} / "
+        f"{fmt_ms(latency.get('p95_ms'))} |",
+        f"| {best['name']} (mean ± std over seeds) | {fmt_pct(best['accuracy'])} "
+        f"| {fmt_pct(best['macro_f1'])} | {fmt_ece(best['ece'])} | | |",
+        f"| teacher `{teacher['name']}` | {fmt_pct(teacher['accuracy'])} "
+        f"| {fmt_pct(teacher['macro_f1'])} | {fmt_ece(teacher['ece'])} "
+        f"| {fmt_usd(teacher['cost_per_1k_usd'])} | "
+        f"{fmt_ms((teacher.get('latency') or {}).get('p50_ms'))} / "
+        f"{fmt_ms((teacher.get('latency') or {}).get('p95_ms'))} |",
+        "",
+        *table_notes(results),
+        "",
+        "## Known failure modes",
+        "",
+    ]
+    if audit is not None:
+        pooled = audit["pooled"]
+        worst = ", ".join(f"`{w['label']}`" for w in pooled["worst_classes"][:5])
+        lines.append(
+            f"- **Inherited teacher errors.** The teacher's labels agree with the hidden human "
+            f"labels {fmt_pct(pooled['accuracy'])} of the time; its weakest intents are "
+            f"{worst}. The student learns these mistakes."
+        )
+    pairs = results["error_analysis"]["pairs"][:5]
+    if pairs:
+        confusions = "; ".join(f"`{p['gold']}` -> `{p['predicted']}` ({p['count']})" for p in pairs)
+        lines.append(
+            f"- **Confusable intents.** Most frequent test errors: {confusions}. "
+            "See error_analysis.md for examples."
+        )
+    lines += [
+        f"- **Calibration.** Expected calibration error is {fmt_ece(served['ece'])}; check "
+        "the routing table in results.md before choosing a fallback threshold.",
+        "- **Distribution shift.** Accuracy is measured on the benchmark's test split; new "
+        "products, phrasing or languages will lower it. Re-label a sample with the teacher "
+        "periodically and compare.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def render_readme_section(results: dict[str, Any], results_dir: str) -> str:
     """The block between the README markers. ``results_dir`` is relative to the README."""
     if results.get("simulated"):
