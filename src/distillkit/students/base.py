@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import random
+import sys
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -43,11 +44,11 @@ class TrainingData:
 
 
 def set_seed(seed: int) -> None:
+    """Seed Python, NumPy and (if a neural student already imported it) PyTorch."""
     random.seed(seed)
     np.random.seed(seed)  # noqa: NPY002 - also seeds libraries that use the legacy global RNG
-    try:
-        import torch
-    except ImportError:
+    torch = sys.modules.get("torch")
+    if torch is None:
         return
     torch.manual_seed(seed)
     if torch.cuda.is_available():

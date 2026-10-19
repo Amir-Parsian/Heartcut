@@ -180,5 +180,94 @@ def train(
         )
 
 
+@app.command()
+def benchmark(
+    config: ConfigOpt,
+    set_: SetOpt = None,
+    skip_latency: Annotated[
+        bool, typer.Option(help="Skip latency/throughput (no cost per 1k for students).")
+    ] = False,
+    verbose: VerboseOpt = False,
+) -> None:
+    """Score teacher and students on the human-labeled test set; write results and charts."""
+    from distillkit.eval.benchmark import run_benchmark
+
+    cfg = _load(config, set_, verbose)
+    results = run_benchmark(cfg, measure=not skip_latency)
+    typer.echo(f"results: {cfg.experiment_results_dir}")
+    typer.echo(results["headline"]["text"])
+
+
+@app.command()
+def export(
+    config: ConfigOpt,
+    set_: SetOpt = None,
+    student: Annotated[str | None, typer.Option(help="Student name; default: best.")] = None,
+    force: bool = False,
+    verbose: VerboseOpt = False,
+) -> None:
+    """Export a trained student (best full-budget seed) to ONNX int8 for CPU serving."""
+    from distillkit.serve.export import run_export
+    from distillkit.students.training import run_training
+
+    cfg = _load(config, set_, verbose)
+    records = run_training(cfg, budgets=["full"])
+    path = run_export(cfg, records, student, force=force)
+    typer.echo(str(path))
+
+
+@app.command()
+def report(
+    config: ConfigOpt,
+    set_: SetOpt = None,
+    readme: Annotated[Path, typer.Option(help="README to update.")] = Path("README.md"),
+    check: Annotated[
+        bool, typer.Option(help="Only verify that the README matches results.json.")
+    ] = False,
+    verbose: VerboseOpt = False,
+) -> None:
+    """Write the README results section from results.json (refuses simulated results)."""
+    import os
+
+    from distillkit.eval.benchmark import load_results
+    from distillkit.eval.report import SimulatedResultsError, update_readme
+
+    cfg = _load(config, set_, verbose)
+    results = load_results(cfg.experiment_results_dir)
+    rel = Path(os.path.relpath(cfg.experiment_results_dir, readme.parent)).as_posix()
+    try:
+        in_sync = update_readme(readme, results, rel, check=check)
+    except SimulatedResultsError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=4) from exc
+    if check and not in_sync:
+        typer.echo(f"{readme} is out of date; run `distillkit report -c {config}`", err=True)
+        raise typer.Exit(code=1)
+    typer.echo(f"{readme} {'is up to date' if check else 'updated'}")
+
+
+@app.command()
+def run(
+    config: ConfigOpt,
+    set_: SetOpt = None,
+    offline: Annotated[
+        bool, typer.Option(help="Use cached teacher labels only (no API spend).")
+    ] = False,
+    verbose: VerboseOpt = False,
+) -> None:
+    """Run every stage: data, label, audit, train, benchmark."""
+    from distillkit.data.prepare import prepare_data
+    from distillkit.eval.audit import run_audit
+    from distillkit.eval.benchmark import run_benchmark
+    from distillkit.teachers.labeling import run_labeling
+
+    cfg = _load(config, set_, verbose)
+    prepare_data(cfg)
+    run_labeling(cfg, offline=offline)
+    run_audit(cfg)
+    results = run_benchmark(cfg)
+    typer.echo(results["headline"]["text"])
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()

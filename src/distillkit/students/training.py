@@ -182,8 +182,8 @@ def train_one(
         run.log_params(flatten(student_cfg.model_dump(mode="json"), "student."))
         run.log_params({"label_filter.min_confidence": cfg.label_filter.min_confidence})
 
+        student = build_student(student_cfg, data.labels)  # imports torch if needed
         set_seed(seed)
-        student = build_student(student_cfg, data.labels)
         fit_info = student.fit(prepared.data, seed)
         val_teacher = [data.labels[i] for i in prepared.data.val_targets]
         metrics, predictions = evaluate_student(
