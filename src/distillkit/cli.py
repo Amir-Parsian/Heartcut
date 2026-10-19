@@ -1,0 +1,184 @@
+"""``distillkit`` command-line interface.
+
+Each pipeline stage is a separate command that reads an experiment config and writes
+versioned outputs, so stages can be re-run independently::
+
+    distillkit data      -c configs/experiments/banking77.yaml
+    distillkit label     -c configs/experiments/banking77.yaml --dry-run
+    distillkit label     -c configs/experiments/banking77.yaml
+    distillkit audit     -c configs/experiments/banking77.yaml
+    distillkit train     -c configs/experiments/banking77.yaml
+    distillkit benchmark -c configs/experiments/banking77.yaml
+    distillkit export    -c configs/experiments/banking77.yaml
+    distillkit serve     --model artifacts/banking77/export/<student>-<fp>
+
+Any config value can be overridden with ``--set key.path=value`` (repeatable), e.g.
+``--set dataset.max_examples.train=200`` for a cheap development slice.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+from pathlib import Path
+from typing import Annotated, Any
+
+import typer
+
+from distillkit import __version__
+
+app = typer.Typer(
+    add_completion=False,
+    no_args_is_help=True,
+    help="Distill an LLM classifier into a tiny CPU model and benchmark the trade-off.",
+)
+
+ConfigOpt = Annotated[
+    Path,
+    typer.Option("--config", "-c", exists=True, dir_okay=False, help="Experiment YAML file."),
+]
+SetOpt = Annotated[
+    list[str] | None,
+    typer.Option("--set", "-o", help="Override a config value: key.path=value (repeatable)."),
+]
+VerboseOpt = Annotated[bool, typer.Option("--verbose", "-v", help="Debug logging.")]
+
+
+def _setup_logging(verbose: bool) -> None:
+    logging.basicConfig(
+        level=logging.DEBUG if verbose else logging.INFO,
+        format="%(asctime)s %(levelname)-7s %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
+    for noisy in ("httpx", "httpx2", "urllib3", "filelock", "datasets", "fsspec"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
+
+
+def _load(config: Path, overrides: list[str] | None, verbose: bool) -> Any:
+    from distillkit.config import load_experiment
+
+    _setup_logging(verbose)
+    return load_experiment(config, overrides or [])
+
+
+def _echo_json(payload: Any) -> None:
+    typer.echo(json.dumps(payload, indent=2, default=str))
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"distillkit {__version__}")
+        raise typer.Exit
+
+
+@app.callback()
+def main(
+    version: Annotated[
+        bool | None,
+        typer.Option("--version", callback=_version_callback, is_eager=True, help="Show version."),
+    ] = None,
+) -> None:
+    """DistillKit: teacher LLM -> labels -> tiny student -> benchmark -> CPU service."""
+
+
+@app.command()
+def data(
+    config: ConfigOpt, set_: SetOpt = None, force: bool = False, verbose: VerboseOpt = False
+) -> None:
+    """Load the dataset into the common schema and hide the training labels."""
+    from distillkit.data.prepare import data_manifest, prepare_data
+
+    cfg = _load(config, set_, verbose)
+    prepared = prepare_data(cfg, force=force)
+    manifest = data_manifest(cfg)
+    typer.echo(f"data: {prepared.directory}")
+    _echo_json(
+        {
+            "counts": manifest["counts"],
+            "labels": len(prepared.labels),
+            "source": manifest["source_used"]["loader"],
+            "overlap": manifest["overlap"],
+        }
+    )
+
+
+@app.command()
+def label(
+    config: ConfigOpt,
+    set_: SetOpt = None,
+    split: Annotated[list[str] | None, typer.Option(help="Split(s) to label.")] = None,
+    dry_run: Annotated[bool, typer.Option(help="Estimate the cost; make no calls.")] = False,
+    offline: Annotated[
+        bool, typer.Option(help="Fail on any cache miss instead of calling the teacher.")
+    ] = False,
+    force: bool = False,
+    verbose: VerboseOpt = False,
+) -> None:
+    """Label the unlabeled pool (and the test split, for scoring) with the teacher LLM."""
+    from distillkit.data.prepare import prepare_data
+    from distillkit.data.schema import SPLITS
+    from distillkit.teachers.labeling import dry_run_estimate, run_labeling
+    from distillkit.teachers.runner import BudgetExceeded, CacheMiss
+
+    cfg = _load(config, set_, verbose)
+    prepare_data(cfg)
+    splits = split or list(SPLITS)
+    if dry_run:
+        _echo_json(dry_run_estimate(cfg, splits))
+        return
+    try:
+        outcome = run_labeling(cfg, splits=splits, offline=offline, force=force)
+    except BudgetExceeded as exc:
+        typer.echo(
+            f"Stopped at the budget cap: {exc}. Finished calls are cached; "
+            "raise teacher.max_budget_usd to continue.",
+            err=True,
+        )
+        raise typer.Exit(code=2) from exc
+    except CacheMiss as exc:
+        typer.echo(f"Offline mode and a call is not cached: {exc}", err=True)
+        raise typer.Exit(code=3) from exc
+    typer.echo(f"labels: {outcome.directory}{' (up to date)' if outcome.skipped else ''}")
+    _echo_json(outcome.cost_report.get("total", {}))
+
+
+@app.command()
+def audit(config: ConfigOpt, set_: SetOpt = None, verbose: VerboseOpt = False) -> None:
+    """Measure teacher label quality against the hidden human labels."""
+    from distillkit.eval.audit import run_audit
+
+    cfg = _load(config, set_, verbose)
+    report = run_audit(cfg)
+    pooled = report["pooled"]
+    typer.echo(f"audit written to {cfg.experiment_results_dir / 'audit.md'}")
+    _echo_json({k: pooled[k] for k in ("examples", "accuracy", "macro_f1", "invalid", "filter")})
+
+
+@app.command()
+def train(
+    config: ConfigOpt,
+    set_: SetOpt = None,
+    student: Annotated[list[str] | None, typer.Option(help="Student name(s); default all.")] = None,
+    seed: Annotated[list[int] | None, typer.Option(help="Seed(s); default from config.")] = None,
+    budget: Annotated[
+        list[str] | None, typer.Option(help="Budget(s): a number or 'full'; default from config.")
+    ] = None,
+    force: bool = False,
+    verbose: VerboseOpt = False,
+) -> None:
+    """Train students on teacher labels (all students x budgets x seeds by default)."""
+    from distillkit.students.training import run_training
+
+    cfg = _load(config, set_, verbose)
+    budgets: list[Any] | None = [b if b == "full" else int(b) for b in budget] if budget else None
+    results = run_training(cfg, students=student, seeds=seed, budgets=budgets, force=force)
+    for r in results:
+        typer.echo(
+            f"{r['student']:<24} budget={r['budget']:<6} seed={r['seed']} "
+            f"val_agreement={r['validation_teacher_agreement']:.4f} "
+            f"test_acc={r['test']['accuracy']:.4f}"
+        )
+
+
+if __name__ == "__main__":  # pragma: no cover
+    app()
