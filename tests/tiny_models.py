@@ -7,6 +7,7 @@ so they run offline in seconds while exercising the same code paths.
 
 from __future__ import annotations
 
+import inspect
 import re
 from pathlib import Path
 
@@ -28,7 +29,12 @@ def build_tiny_bert(directory: Path) -> Path:
     directory.mkdir(parents=True, exist_ok=True)
     vocab_file = directory / "vocab.txt"
     vocab_file.write_text("\n".join(_vocab()) + "\n", encoding="utf-8")
-    tokenizer = BertTokenizerFast(vocab_file=str(vocab_file), do_lower_case=True)
+    # transformers 5 takes ``vocab`` and silently ignores the old ``vocab_file`` argument.
+    params = inspect.signature(BertTokenizerFast.__init__).parameters
+    key = "vocab" if "vocab" in params else "vocab_file"
+    tokenizer = BertTokenizerFast(**{key: str(vocab_file)}, do_lower_case=True)
+    if "[UNK]" in tokenizer.tokenize("where is my card"):
+        raise RuntimeError("tiny tokenizer did not load its vocabulary")
     config = BertConfig(
         vocab_size=tokenizer.vocab_size,
         hidden_size=32,

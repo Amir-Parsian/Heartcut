@@ -126,6 +126,36 @@ def test_encoder_student_trains_saves_and_loads(
     assert loaded.predict_proba([]).shape == (0, len(LABELS))
 
 
+@pytest.mark.slow
+def test_encoder_student_actually_learns(tiny_bert: Path) -> None:
+    config = EncoderStudentConfig(
+        name="encoder",
+        params={
+            "model_name": str(tiny_bert),
+            "epochs": 20,
+            "batch_size": 16,
+            "learning_rate": 2e-3,
+            "early_stopping_patience": 20,
+        },
+    )
+    student = build_student(config, LABELS)
+    idx = {label: i for i, label in enumerate(LABELS)}
+    rows = generate(25, seed=1)
+    student.fit(
+        TrainingData(
+            [r["text"] for r in rows],
+            np.array([idx[r["intent"]] for r in rows]),
+            [r["text"] for r in rows[:20]],
+            np.array([idx[r["intent"]] for r in rows[:20]]),
+        ),
+        seed=0,
+    )
+    test = generate(10, seed=3)
+    predicted, _ = student.predict([r["text"] for r in test])
+    accuracy = np.mean([p == r["intent"] for p, r in zip(predicted, test, strict=True)])
+    assert accuracy > 0.8
+
+
 def test_untrained_neural_students_raise() -> None:
     for config in (SetFitStudentConfig(name="s"), EncoderStudentConfig(name="e")):
         with pytest.raises(RuntimeError):
