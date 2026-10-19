@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -71,6 +72,14 @@ def _stat(values: Sequence[float | None]) -> dict[str, Any]:
     return {"mean": mean, "std": std if len(clean) > 1 else None, "n": len(clean)}
 
 
+def _cost_per_1k(costs: Sequence[float | None]) -> float | None:
+    """Teacher cost per 1,000 predictions, or None when any call has no known price."""
+    known = [float(c) for c in costs if c is not None and not math.isnan(c)]
+    if not costs or len(known) != len(costs):
+        return None
+    return teacher_cost_per_1k(known)
+
+
 def _latency(values: Sequence[float]) -> dict[str, float]:
     arr = np.asarray(values, dtype=float)
     return {"p50_ms": float(np.percentile(arr, 50)), "p95_ms": float(np.percentile(arr, 95))}
@@ -100,9 +109,7 @@ def teacher_rows(cfg: ExperimentConfig, data: PreparedData) -> list[dict[str, An
             "accuracy": _stat([single.accuracy]),
             "macro_f1": _stat([single.macro_f1]),
             "ece": _stat([None]),
-            "cost_per_1k_usd": teacher_cost_per_1k(single_costs)
-            if all(c is not None for c in single_costs)
-            else None,
+            "cost_per_1k_usd": _cost_per_1k(single_costs),
             "latency": _latency(first["latency_ms"].tolist()),
             "latency_source": "logged API round trip",
             "throughput_rps": None,
@@ -127,9 +134,7 @@ def teacher_rows(cfg: ExperimentConfig, data: PreparedData) -> list[dict[str, An
                 "accuracy": _stat([majority.accuracy]),
                 "macro_f1": _stat([majority.macro_f1]),
                 "ece": _stat([majority.ece]),
-                "cost_per_1k_usd": teacher_cost_per_1k(costs)
-                if all(c is not None for c in costs)
-                else None,
+                "cost_per_1k_usd": _cost_per_1k(costs),
                 "latency": _latency(per_example.tolist()),
                 "latency_source": "logged API round trip (slowest of k parallel calls)",
                 "throughput_rps": None,
@@ -317,7 +322,7 @@ def headline(teacher: dict[str, Any], student: dict[str, Any], cpu: str) -> dict
         speedup = teacher["latency"]["p50_ms"] / student["latency"]["p50_ms"]
         out["speedup_p50"] = speedup
         parts.append(f"{speedup:,.0f}x faster per request (median latency; student on {cpu})")
-    text = ", ".join(parts[:-1]) + (", and " if len(parts) > 1 else "") + parts[-1]
+    text = " and ".join(parts) if len(parts) <= 2 else ", ".join(parts[:-1]) + ", and " + parts[-1]
     out["text"] = f"{student['name']}: {text[0].upper()}{text[1:]}."
     return out
 

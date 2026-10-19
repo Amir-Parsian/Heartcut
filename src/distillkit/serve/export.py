@@ -18,6 +18,7 @@ Output directory::
 
 from __future__ import annotations
 
+import copy
 import json
 import logging
 import shutil
@@ -61,7 +62,8 @@ def _logits_module(student: Student) -> tuple[Any, Any, int]:
         from distillkit.students.encoder import EncoderStudent
 
         assert isinstance(student, EncoderStudent) and student.model is not None
-        model = student.model.eval()
+        # Export a CPU copy: the student may live on a GPU and must not be modified.
+        model = copy.deepcopy(student.model).cpu().eval()
 
         class EncoderLogits(torch.nn.Module):
             def __init__(self) -> None:
@@ -87,7 +89,7 @@ def _logits_module(student: Student) -> tuple[Any, Any, int]:
         names = [type(m).__name__ for m in modules]
         if names[:2] != ["Transformer", "Pooling"] or set(names[2:]) - {"Normalize"}:
             raise ValueError(f"unsupported sentence-transformers pipeline for export: {names}")
-        transformer = modules[0].auto_model.eval()
+        transformer = copy.deepcopy(modules[0].auto_model).cpu().eval()
         pooling = getattr(modules[1], "pooling_mode", None) or modules[1].get_config_dict().get(
             "pooling_mode"
         )

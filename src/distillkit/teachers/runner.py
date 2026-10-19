@@ -206,9 +206,10 @@ class LabelingRunner:
                 self.spent_usd += cost
                 progress.spent_usd += cost
         parsed = parse_label(completion.text, self.labels)
-        error = parsed.error
+        label, error = parsed.label, parsed.error
         if completion.stop_reason == "refusal":
-            error = "refusal"
+            # Whatever text came with a refusal is not an answer.
+            label, error = None, "refusal"
         progress.done += 1
         if progress.done >= progress.next_report:
             logger.info(
@@ -225,7 +226,7 @@ class LabelingRunner:
             split=split,
             sample_index=sample_index,
             cache_hit=cache_hit,
-            label=parsed.label,
+            label=label,
             error=error,
             input_tokens=completion.input_tokens,
             output_tokens=completion.output_tokens,

@@ -296,11 +296,13 @@ def _save(fig: Figure, path: Path) -> Path:
 def render_all(results: dict[str, Any], directory: Path) -> dict[str, str]:
     """Render light and dark versions of both charts; return file names by key."""
     files: dict[str, str] = {}
+    # A Pareto chart needs costs; without latency runs or prices there is nothing to plot.
+    has_costs = any(m.get("cost_per_1k_usd") for m in results["models"])
     for theme in THEMES:
         suffix = "" if theme is LIGHT else "-dark"
-        files[f"pareto{suffix}"] = plot_pareto(
-            results, directory / f"pareto{suffix}.png", theme
-        ).name
+        if has_costs:
+            path = directory / f"pareto{suffix}.png"
+            files[f"pareto{suffix}"] = plot_pareto(results, path, theme).name
         if results.get("learning_curve"):
             files[f"learning_curve{suffix}"] = plot_learning_curve(
                 results, directory / f"learning_curve{suffix}.png", theme

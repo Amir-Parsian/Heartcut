@@ -206,7 +206,11 @@ def train(
     force: bool = False,
     verbose: VerboseOpt = False,
 ) -> None:
-    """Train students on teacher labels (all students x budgets x seeds by default)."""
+    """Train students on teacher labels (all students x budgets x seeds by default).
+
+    Prints agreement with the teacher on the teacher-labeled validation set only; test-set
+    scores belong to the benchmark, so nothing here invites tuning on them.
+    """
     from distillkit.students.training import run_training
 
     cfg = _load(config, set_, verbose)
@@ -215,8 +219,8 @@ def train(
     for r in results:
         typer.echo(
             f"{r['student']:<24} budget={r['budget']:<6} seed={r['seed']} "
-            f"val_agreement={r['validation_teacher_agreement']:.4f} "
-            f"test_acc={r['test']['accuracy']:.4f}"
+            f"train_examples={r['train_examples']:<6} "
+            f"val_agreement={r['validation_teacher_agreement']:.4f}"
         )
 
 

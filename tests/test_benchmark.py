@@ -172,3 +172,14 @@ def test_formatters() -> None:
     assert fmt_usd(0.0000061) == "$0.0000061"
     assert fmt_usd(None) == "n/a" and fmt_usd(0) == "$0"
     assert fmt_ms(0.42) == "0.42 ms" and fmt_ms(650) == "650 ms" and fmt_ms(None) == "n/a"
+
+
+def test_unpriced_teacher_has_unknown_cost(make_experiment) -> None:  # type: ignore[no-untyped-def]
+    base = make_experiment()
+    teacher = base.teacher.model_copy(update={"pricing": None, "is_local": True})
+    cfg = base.model_copy(update={"teacher": teacher})
+    prepare_data(cfg)
+    run_labeling(cfg)
+    res = run_benchmark(cfg, measure=False)
+    assert all(m["cost_per_1k_usd"] is None for m in res["models"] if m["role"] == "teacher")
+    assert res["labeling_cost_per_example_usd"] is None
