@@ -17,7 +17,6 @@ from distillkit.students import Student, TrainingData, build_student
 from distillkit.students.setfit import make_pairs
 from distillkit.students.torch_utils import distillation_loss
 from tests.synthetic import INTENTS, generate
-from tests.tiny_models import build_tiny_bert, build_tiny_sentence_transformer
 
 LABELS = sorted(INTENTS)
 
@@ -37,16 +36,6 @@ def _data(soft: bool = False) -> TrainingData:
         val_targets=np.array([idx[r["intent"]] for r in val]),
         soft_targets=soft_targets,
     )
-
-
-@pytest.fixture(scope="module")
-def tiny_st(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    return build_tiny_sentence_transformer(tmp_path_factory.mktemp("models") / "st")
-
-
-@pytest.fixture(scope="module")
-def tiny_bert(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    return build_tiny_bert(tmp_path_factory.mktemp("models") / "bert")
 
 
 def test_make_pairs_is_balanced() -> None:

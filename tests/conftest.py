@@ -85,3 +85,21 @@ def make_experiment(tmp_path: Path, dataset_files: dict[str, Path]) -> Experimen
 @pytest.fixture
 def banking77_config() -> ExperimentConfig:
     return load_experiment(REPO / "configs" / "experiments" / "banking77.yaml")
+
+
+@pytest.fixture(scope="session")
+def tiny_st(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """A 2-layer sentence-transformers model built locally (no download)."""
+    pytest.importorskip("sentence_transformers")
+    from tests.tiny_models import build_tiny_sentence_transformer
+
+    return build_tiny_sentence_transformer(tmp_path_factory.mktemp("models") / "st")
+
+
+@pytest.fixture(scope="session")
+def tiny_bert(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """A 2-layer BERT checkpoint built locally (no download)."""
+    pytest.importorskip("transformers")
+    from tests.tiny_models import build_tiny_bert
+
+    return build_tiny_bert(tmp_path_factory.mktemp("models") / "bert")

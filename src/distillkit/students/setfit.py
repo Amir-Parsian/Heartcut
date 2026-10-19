@@ -94,8 +94,8 @@ class SetFitStudent(Student):
             order = rng.permutation(len(anchors))
             for start in range(0, len(order), p.contrastive_batch_size):
                 idx = order[start : start + p.contrastive_batch_size]
-                left = to_device(self.body.tokenize([texts[i] for i in anchors[idx]]), device)
-                right = to_device(self.body.tokenize([texts[i] for i in others[idx]]), device)
+                left = to_device(self._features([texts[i] for i in anchors[idx]]), device)
+                right = to_device(self._features([texts[i] for i in others[idx]]), device)
                 u = self.body(left)["sentence_embedding"]
                 v = self.body(right)["sentence_embedding"]
                 cosine = torch.nn.functional.cosine_similarity(u, v)
@@ -107,6 +107,13 @@ class SetFitStudent(Student):
                 steps += 1
         self.body.eval()
         return steps
+
+    def _features(self, texts: list[str]) -> dict[str, Any]:
+        assert self.body is not None
+        # sentence-transformers 5 renamed tokenize() to preprocess().
+        prepare = getattr(self.body, "preprocess", None) or self.body.tokenize
+        features: dict[str, Any] = prepare(texts)
+        return features
 
     def embed(self, texts: Sequence[str]) -> np.ndarray:
         if self.body is None:
