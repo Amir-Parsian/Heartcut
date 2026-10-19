@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 import pytest
+
+os.environ.setdefault("HF_HUB_OFFLINE", "1")  # tests never download models
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 from distillkit.config import ExperimentConfig, load_experiment
 from tests.synthetic import write_dataset
