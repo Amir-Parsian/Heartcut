@@ -1,0 +1,13 @@
+# DistilBERT trained on the teacher's vote distribution (knowledge-distillation loss).
+# Needs a teacher run with self_consistency > 1; otherwise it falls back to hard labels.
+name: encoder-distilbert-soft
+kind: encoder
+use_soft_labels: true
+params:
+  model_name: distilbert-base-uncased
+  max_length: 64
+  epochs: 5
+  batch_size: 32
+  learning_rate: 5.0e-5
+  kd_alpha: 0.5
+  kd_temperature: 2.0

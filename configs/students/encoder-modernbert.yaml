@@ -1,0 +1,12 @@
+# Alternative medium tier: ModernBERT-base (149M parameters, 8k context, newer
+# architecture). Not in the default benchmark; swap it in to compare encoders.
+name: encoder-modernbert
+kind: encoder
+params:
+  model_name: answerdotai/ModernBERT-base
+  max_length: 64
+  epochs: 4
+  batch_size: 32
+  learning_rate: 3.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.1

@@ -1,0 +1,15 @@
+# Open-weights teacher served by vLLM (fits on one 24 GB consumer GPU or a Colab L4/A100):
+#   vllm serve Qwen/Qwen2.5-7B-Instruct --max-model-len 4096
+# vLLM uses guided decoding for `response_format: json_schema`, so answers always parse.
+# See qwen2.5-7b-ollama.yaml for how to price a local teacher.
+name: qwen2.5-7b-vllm
+backend: openai
+model: Qwen/Qwen2.5-7B-Instruct
+base_url: http://localhost:8000/v1
+prompt: ../../prompts/intent_classification.yaml
+structured_output: json_schema
+temperature: 0.7
+max_output_tokens: 64
+self_consistency: 1
+concurrency: 32
+is_local: true

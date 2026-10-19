@@ -1,0 +1,17 @@
+# Open-weights teacher served locally by Ollama (OpenAI-compatible endpoint).
+#   ollama pull qwen2.5:7b-instruct && ollama serve
+# No API key is needed. Local calls have no per-token bill, so `pricing` must be set to
+# something you can defend for the cost comparison, e.g. a hosted provider's published
+# price for the same weights, or your GPU-hour cost divided by measured tokens/hour.
+# Until then costs are reported as unknown instead of as zero.
+name: qwen2.5-7b-ollama
+backend: openai
+model: qwen2.5:7b-instruct
+base_url: http://localhost:11434/v1
+prompt: ../../prompts/intent_classification.yaml
+structured_output: json_schema      # Ollama >= 0.5 supports JSON-schema constrained output
+temperature: 0.7                    # >0 so that self-consistency samples can differ
+max_output_tokens: 64
+self_consistency: 1
+concurrency: 4
+is_local: true

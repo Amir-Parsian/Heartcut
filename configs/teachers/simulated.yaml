@@ -1,0 +1,17 @@
+# Simulated teacher for tests, CI and dry runs. It peeks at the hidden human labels and
+# corrupts a share of them, so results produced with it are marked "simulated" and are
+# never published. Prices are borrowed from claude-haiku-5-5 so the cost code runs.
+name: simulated
+backend: simulated
+model: oracle-with-noise
+prompt: ../../prompts/intent_classification.yaml
+self_consistency: 3
+simulated:
+  accuracy: 0.9
+  invalid_rate: 0.01
+  seed: 0
+pricing:
+  input: 0.10
+  output: 0.50
+  source: "simulated: borrowed from claude-haiku-5-5"
+  as_of: "2026-10-06"

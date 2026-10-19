@@ -1,0 +1,16 @@
+# Hosted teacher: Claude Haiku 5.5, the cheapest current Claude model.
+# Thinking is turned off (allowed on Haiku 5.5 at the default effort), so each answer is
+# a few output tokens of JSON.
+name: claude-haiku-5-5
+backend: anthropic
+model: claude-haiku-5-5
+api_key_env: ANTHROPIC_API_KEY
+prompt: ../../prompts/intent_classification.yaml
+structured_output: json_schema
+max_output_tokens: 64
+request_options:
+  thinking: {type: disabled}
+self_consistency: 1
+concurrency: 16
+requests_per_minute: 600
+max_budget_usd: 50

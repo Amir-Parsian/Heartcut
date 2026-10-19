@@ -1,0 +1,20 @@
+# Second benchmark: CLINC150 (150 intents + out-of-scope). Tests generalisation to a
+# different domain mix and out-of-scope handling.
+name: clinc150
+dataset: ../datasets/clinc150.yaml
+teacher: ../teachers/claude-opus-5-5.yaml
+students:
+  - ../students/tfidf-logreg.yaml
+  - ../students/setfit-minilm.yaml
+  - ../students/encoder-distilbert.yaml
+seeds: [0, 1, 2]
+budgets: [500, 2000, 5000, full]
+tracking:
+  backend: mlflow
+benchmark:
+  cpu:
+    instance: AWS c7i.xlarge (4 vCPU, on-demand, us-east-1)
+    usd_per_hour: 0.1785
+    price_as_of: "unverified - check before publishing"
+  latency:
+    threads: 4

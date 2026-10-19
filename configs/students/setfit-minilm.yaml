@@ -1,0 +1,14 @@
+# Small tier (22M parameters): SetFit-style sentence-embedding model.
+# Step 1 fine-tunes all-MiniLM-L6-v2 contrastively on pairs of teacher-labeled examples
+# (same intent -> similar, different intent -> dissimilar); step 2 fits a logistic
+# regression head on the embeddings.
+name: setfit-minilm
+kind: setfit
+params:
+  model_name: sentence-transformers/all-MiniLM-L6-v2
+  max_length: 64
+  contrastive_epochs: 1
+  max_pairs: 20000
+  contrastive_batch_size: 32
+  learning_rate: 2.0e-5
+  head_C: 10.0

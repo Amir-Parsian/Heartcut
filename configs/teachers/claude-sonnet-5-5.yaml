@@ -1,0 +1,15 @@
+# Hosted teacher: Claude Sonnet 5.5. `between_tools` is how thinking is switched off on
+# this model (accepted at effort "high" or below; "high" is the default).
+name: claude-sonnet-5-5
+backend: anthropic
+model: claude-sonnet-5-5
+api_key_env: ANTHROPIC_API_KEY
+prompt: ../../prompts/intent_classification.yaml
+structured_output: json_schema
+max_output_tokens: 128
+request_options:
+  thinking: {type: between_tools}
+self_consistency: 1
+concurrency: 8
+requests_per_minute: 300
+max_budget_usd: 50
