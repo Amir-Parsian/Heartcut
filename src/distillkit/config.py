@@ -195,7 +195,7 @@ class LabelFilterConfig(StrictModel):
 
 class TrackingConfig(StrictModel):
     backend: Literal["mlflow", "none"] = "none"
-    tracking_uri: str = "file:./mlruns"
+    tracking_uri: str = "sqlite:///mlruns.db"
     experiment_name: str | None = None
 
 

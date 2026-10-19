@@ -19,7 +19,7 @@ label_filter:
   min_confidence: null        # e.g. 0.6 with self_consistency >= 3
 tracking:
   backend: mlflow
-  tracking_uri: file:./mlruns
+  tracking_uri: sqlite:///mlruns.db
 benchmark:
   cpu:
     # Measured throughput is converted to dollars at this instance's hourly price.

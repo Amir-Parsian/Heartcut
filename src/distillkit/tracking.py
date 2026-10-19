@@ -1,7 +1,8 @@
 """Experiment tracking.
 
-MLflow is the default because it needs no account: runs land in ``./mlruns`` and
-``mlflow ui`` shows them. The ``none`` backend keeps CI and tests dependency-free.
+MLflow is the default because it needs no account: runs land in a local SQLite file
+(``mlruns.db``) and ``mlflow ui --backend-store-uri sqlite:///mlruns.db`` shows them.
+The ``none`` backend keeps CI and tests dependency-free.
 Every training run logs its config, the fingerprints of the data and teacher labels it
 was trained on, and its metrics.
 """
