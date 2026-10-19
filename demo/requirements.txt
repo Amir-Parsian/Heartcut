@@ -1,0 +1,5 @@
+# Hugging Face Spaces installs these; the demo needs the serving runtime and, for the
+# teacher column, the teacher SDKs.
+distillkit[serve,teachers] @ git+https://github.com/Amir-Parsian/DistillKit
+gradio>=4.40
+huggingface-hub>=0.24
