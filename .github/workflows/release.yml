@@ -1,6 +1,7 @@
 name: Release
 
-# Publishes the wheel and sdist to PyPI when a version tag (v0.1.0, v0.2.0, ...) is pushed.
+# Publishes the wheel and sdist to PyPI when a version tag (v0.1.0, v0.2.0, ...) is pushed,
+# then creates the GitHub release with that version's CHANGELOG.md section.
 # Uses PyPI trusted publishing (OIDC), so no API token is stored as a secret. PyPI must
 # list this repository, this workflow file (release.yml) and the `pypi` environment as a
 # trusted publisher for the `heartcut` project.
@@ -46,3 +47,18 @@ jobs:
           name: dist
           path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: create the GitHub release from the changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          awk -v v="${GITHUB_REF_NAME#v}" 'index($0, "## [" v "]") == 1 {on = 1; next}
+            on && (/^## \[/ || /^\[[^]]*\]: /) {exit} on' CHANGELOG.md > notes.md
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md

@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Security
+- After the eMudhra/emSign CA key compromise: certifi 2026.10.19 in the lockfile, and
+  the Docker image installs dependencies with uv 0.13.4, copied from uv's official image
+  instead of installed with the base image's pip.
+
+### Added
+- The Release workflow also creates the GitHub release, with the version's changelog
+  section as its notes. README badge for the PyPI version.
+
+### Changed
+- The Hugging Face Spaces demo installs `heartcut` from PyPI instead of from GitHub, and
+  its Space config pins Python 3.11, which Heartcut requires.
+
 ## [0.1.0] - 2026-10-20
 
 ### Added
