@@ -1,0 +1,23 @@
+# Complete CPU demo: no API key, external dataset or pretrained model download.
+# The simulated teacher uses hidden labels, so these are illustrative results only.
+name: helpdesk-demo
+dataset: dataset.yaml
+teacher: ../../configs/teachers/simulated.yaml
+students:
+  - name: tfidf-hard
+    kind: tfidf
+  - name: tfidf-soft
+    kind: tfidf
+    use_soft_labels: true
+seeds: [0]
+budgets: [36, full]
+tracking:
+  backend: none
+benchmark:
+  latency:
+    warmup: 2
+    requests: 20
+    throughput_seconds: 0.2
+    threads: 1
+# Keep generated reports out of the repository's published results directory.
+results_dir: artifacts/demo-results

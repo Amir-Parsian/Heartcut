@@ -156,6 +156,14 @@ per call, and deploys to Hugging Face Spaces.
 
 ## Add your own task
 
+For a complete runnable example, see [helpdesk distillation](examples/helpdesk/README.md):
+teacher labeling, hard/soft student training, benchmarking, export, fresh predictions
+and HTTP serving, with a free simulated run and instructions for real teachers.
+
+```bash
+uv run --extra pipeline python examples/helpdesk/demo.py
+```
+
 A new dataset needs a config file and, if none of the built-in loaders fit, a loader
 function. No core code changes. See [docs/adding-a-task.md](docs/adding-a-task.md) and
 the worked example in [examples/helpdesk](examples/helpdesk).
