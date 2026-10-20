@@ -62,9 +62,23 @@ student's cost and latency numbers hold outside a notebook.
 | Export | `heartcut export` | Best student (chosen on teacher-labeled validation data) to ONNX with dynamic int8 quantisation, parity-checked against the original. |
 | Serve | `heartcut serve` | FastAPI on CPU, optional fallback to the teacher below a confidence threshold. |
 
+## Install
+
+Requires Python 3.11+.
+
+```bash
+pip install "heartcut[all]"     # every stage, including PyTorch for the neural students
+pip install "heartcut[serve]"   # only serve an exported student: ONNX Runtime, no PyTorch
+```
+
+The extras (`pipeline`, `teachers`, `students`, `export`, `serve`, `tracking`, `demo`)
+can be combined; [pyproject.toml](pyproject.toml) lists what each one installs. The
+ready-made experiment configs and prompts live in this repository, so the quickstart
+below runs from a clone.
+
 ## Quickstart
 
-Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
+Requires [uv](https://docs.astral.sh/uv/).
 
 ```bash
 git clone https://github.com/Amir-Parsian/Heartcut && cd Heartcut
