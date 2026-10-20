@@ -400,7 +400,7 @@ def load_teacher(path: str | Path, overrides: Iterable[str] = ()) -> TeacherConf
 
 
 def load_pricing_table(path: str | Path | None = None) -> dict[str, TokenPricing]:
-    """Load the published-price table shipped in ``configs/pricing.yaml``."""
+    """Load a published-price table, by default ``configs/pricing.yaml``."""
     path = Path(path) if path else _default_pricing_path()
     data = _read_yaml(path)
     meta = {k: data.get(k, "") for k in ("as_of", "source")}
@@ -412,8 +412,11 @@ def load_pricing_table(path: str | Path | None = None) -> dict[str, TokenPricing
 
 
 def _default_pricing_path() -> Path:
-    for root in (Path.cwd(), Path(__file__).resolve().parents[2]):
-        candidate = root / "configs" / "pricing.yaml"
+    """``configs/pricing.yaml`` in the working directory, then in this source checkout, then
+    the copy the wheel ships next to this module (an installed package has no ``configs/``)."""
+    here = Path(__file__).resolve()
+    for directory in (Path.cwd() / "configs", here.parents[2] / "configs", here.parent):
+        candidate = directory / "pricing.yaml"
         if candidate.exists():
             return candidate
     raise FileNotFoundError("configs/pricing.yaml not found; pass a pricing path explicitly")

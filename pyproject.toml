@@ -2,7 +2,8 @@
 name = "heartcut"
 version = "0.1.0"
 description = "Distill an expensive LLM classifier into a tiny model: label with a teacher LLM, train compact students, benchmark cost/accuracy/latency, serve on CPU."
-readme = "README.md"
+# The PyPI description is README.md rewritten for PyPI; see fancy-pypi-readme below.
+dynamic = ["readme"]
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Amir Parsian" }]
@@ -84,11 +85,40 @@ dev = [
 ]
 
 [build-system]
-requires = ["hatchling>=1.25"]
+requires = ["hatchling>=1.25", "hatch-fancy-pypi-readme>=24.1"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/heartcut"]
+
+[tool.hatch.build.targets.wheel.force-include]
+# Installed users have no configs/ directory; config.py falls back to this copy.
+"configs/pricing.yaml" = "heartcut/pricing.yaml"
+
+# PyPI does not resolve relative links or render Mermaid, so the PyPI description points
+# relative links at the release's tag on GitHub (raw files for images, including the
+# charts that `heartcut report` writes into the README) and swaps the diagram for a link.
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = '(?s)```mermaid\n.*?```\n'
+replacement = '*The pipeline diagram is in the [README on GitHub](https://github.com/Amir-Parsian/Heartcut/tree/v$HFPR_VERSION#how-it-works).*\n'
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = '(!\[[^\]]*\]\()(?!https?://)([^)\s]+)\)'
+replacement = '\1https://raw.githubusercontent.com/Amir-Parsian/Heartcut/v$HFPR_VERSION/\2)'
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = '\b(src|srcset)="(?!https?://)([^"]+)"'
+replacement = '\1="https://raw.githubusercontent.com/Amir-Parsian/Heartcut/v$HFPR_VERSION/\2"'
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = '\]\((?!https?://|#|mailto:)([^)\s]+)\)'
+replacement = '](https://github.com/Amir-Parsian/Heartcut/tree/v$HFPR_VERSION/\1)'
 
 [tool.ruff]
 line-length = 100

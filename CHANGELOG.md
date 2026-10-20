@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Release workflow: pushing a `v*` tag builds the package and publishes it to PyPI
+  through trusted publishing, after checking the tag matches the package version.
+- `pip install` instructions in the README, and a CI job that builds the package and
+  checks the installed wheel outside the repository.
+
+### Fixed
+- The wheel now ships the price table, so teacher costs are reported when Heartcut is
+  installed from PyPI rather than run from a clone. A `configs/pricing.yaml` in the
+  working directory still takes precedence.
+- The PyPI description: relative links and chart images point at the release's tag on
+  GitHub, and the Mermaid diagram (which PyPI cannot render) is replaced by a link.
+
 ### Changed
 - Renamed the project from DistillKit to Heartcut, because the old name is already used
   by another LLM distillation toolkit. The package and CLI are now `heartcut`,

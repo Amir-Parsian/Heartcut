@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
+import heartcut.config as config_module
 from heartcut.config import (
     ExperimentConfig,
     TeacherConfig,
@@ -102,3 +104,16 @@ def test_pricing_table_has_dates() -> None:
     assert "claude-haiku-5-5" in table
     assert table["claude-haiku-5-5"].as_of
     assert table["claude-opus-5-5"].output > table["claude-opus-5-5"].input
+
+
+def test_installed_package_uses_its_packaged_price_table(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # A wheel install: no configs/ in the working directory or above the package, only the
+    # pricing.yaml that the wheel build copies next to config.py.
+    package = tmp_path / "site-packages" / "heartcut"
+    package.mkdir(parents=True)
+    shutil.copy(REPO / "configs" / "pricing.yaml", package / "pricing.yaml")
+    monkeypatch.setattr(config_module, "__file__", str(package / "config.py"))
+    monkeypatch.chdir(tmp_path)
+    assert load_pricing_table() == load_pricing_table(REPO / "configs" / "pricing.yaml")
