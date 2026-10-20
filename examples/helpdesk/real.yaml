@@ -1,0 +1,22 @@
+# Same runnable demo with a real hosted teacher. Set ANTHROPIC_API_KEY first.
+# Preview cost with demo.py --config examples/helpdesk/real.yaml --dry-run.
+name: helpdesk-real
+dataset: dataset.yaml
+teacher: ../../configs/teachers/claude-haiku-5-5.yaml
+students:
+  - name: tfidf-hard
+    kind: tfidf
+  - name: tfidf-soft
+    kind: tfidf
+    use_soft_labels: true
+seeds: [0]
+budgets: [36, full]
+tracking:
+  backend: none
+benchmark:
+  latency:
+    warmup: 2
+    requests: 20
+    throughput_seconds: 0.2
+    threads: 1
+results_dir: artifacts/demo-results

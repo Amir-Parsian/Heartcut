@@ -5,6 +5,9 @@ none of the built-in loaders fits, a loader function. Nothing in `src/` changes.
 worked example is [`examples/helpdesk`](../examples/helpdesk): IT tickets with a
 `subject`, a `body` and a `queue`.
 
+For the full runnable process through training, export, prediction and serving, see
+the [helpdesk walkthrough](../examples/helpdesk/README.md).
+
 ## 1. Can a built-in loader read your data?
 
 | Loader | Use it for | Key arguments |
