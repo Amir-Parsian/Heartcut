@@ -7,17 +7,17 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from distillkit.config import DatasetConfig, DatasetSource
-from distillkit.data import loaders
-from distillkit.data.prepare import (
+from heartcut.config import DatasetConfig, DatasetSource
+from heartcut.data import loaders
+from heartcut.data.prepare import (
     build_splits,
     load_hidden_gold,
     load_prepared,
     load_raw,
     prepare_data,
 )
-from distillkit.data.schema import validate_frame
-from distillkit.data.splits import nested_prefix, stratified_sample, stratified_split
+from heartcut.data.schema import validate_frame
+from heartcut.data.splits import nested_prefix, stratified_sample, stratified_split
 
 
 def _frame(n_per_class: dict[str, int]) -> pd.DataFrame:
@@ -86,11 +86,11 @@ def test_clinc_json_loader_merges_out_of_scope(tmp_path: Path) -> None:
 
 def test_resolve_loader_by_name_and_import_path() -> None:
     assert loaders.resolve_loader("jsonl") is loaders.load_jsonl
-    assert loaders.resolve_loader("distillkit.data.loaders:load_csv") is loaders.load_csv
+    assert loaders.resolve_loader("heartcut.data.loaders:load_csv") is loaders.load_csv
     with pytest.raises(ValueError, match="unknown loader"):
         loaders.resolve_loader("does-not-exist")
     with pytest.raises(ValueError, match="callable"):
-        loaders.resolve_loader("distillkit.data.loaders:_REGISTRY")
+        loaders.resolve_loader("heartcut.data.loaders:_REGISTRY")
 
 
 def test_register_loader_rejects_name_clash() -> None:
@@ -209,7 +209,7 @@ def test_dataset_changes_produce_a_new_version(make_experiment) -> None:  # type
 
 
 def test_load_prepared_requires_the_stage(make_experiment) -> None:  # type: ignore[no-untyped-def]
-    with pytest.raises(FileNotFoundError, match="distillkit data"):
+    with pytest.raises(FileNotFoundError, match="heartcut data"):
         load_prepared(make_experiment())
 
 

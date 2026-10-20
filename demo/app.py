@@ -3,10 +3,10 @@
 Runs locally or as a Hugging Face Space. Configuration (environment variables / Space
 secrets):
 
-    DISTILLKIT_MODEL_DIR       exported model directory, or
-    DISTILLKIT_MODEL_REPO      a Hugging Face model repo holding the exported directory
-    DISTILLKIT_RESULTS         results.json of the benchmark (for the student's cost/call)
-    DISTILLKIT_TEACHER_CONFIG  teacher YAML; the teacher column is shown when its API key
+    HEARTCUT_MODEL_DIR       exported model directory, or
+    HEARTCUT_MODEL_REPO      a Hugging Face model repo holding the exported directory
+    HEARTCUT_RESULTS         results.json of the benchmark (for the student's cost/call)
+    HEARTCUT_TEACHER_CONFIG  teacher YAML; the teacher column is shown when its API key
                                (e.g. ANTHROPIC_API_KEY) is set
 
 Every number shown is measured for the request just made (latency, teacher tokens) or
@@ -21,9 +21,9 @@ import os
 from pathlib import Path
 from typing import Any
 
-from distillkit.config import load_teacher
-from distillkit.serve.router import TeacherClassifier
-from distillkit.serve.runtime import Predictor, load_predictor, predict
+from heartcut.config import load_teacher
+from heartcut.serve.router import TeacherClassifier
+from heartcut.serve.runtime import Predictor, load_predictor, predict
 
 EXAMPLES = [
     "I still haven't received my new card, it's been two weeks.",
@@ -35,20 +35,20 @@ EXAMPLES = [
 
 
 def load_student() -> Predictor:
-    model_dir = os.environ.get("DISTILLKIT_MODEL_DIR")
-    repo = os.environ.get("DISTILLKIT_MODEL_REPO")
+    model_dir = os.environ.get("HEARTCUT_MODEL_DIR")
+    repo = os.environ.get("HEARTCUT_MODEL_REPO")
     if not model_dir and repo:
         from huggingface_hub import snapshot_download
 
         model_dir = snapshot_download(repo_id=repo)
     if not model_dir:
-        raise RuntimeError("set DISTILLKIT_MODEL_DIR or DISTILLKIT_MODEL_REPO")
-    threads = os.environ.get("DISTILLKIT_THREADS")
+        raise RuntimeError("set HEARTCUT_MODEL_DIR or HEARTCUT_MODEL_REPO")
+    threads = os.environ.get("HEARTCUT_THREADS")
     return load_predictor(Path(model_dir), threads=int(threads) if threads else None)
 
 
 def load_teacher_classifier(predictor: Predictor) -> TeacherClassifier | None:
-    path = os.environ.get("DISTILLKIT_TEACHER_CONFIG")
+    path = os.environ.get("HEARTCUT_TEACHER_CONFIG")
     if not path:
         return None
     config = load_teacher(path)
@@ -64,7 +64,7 @@ def load_teacher_classifier(predictor: Predictor) -> TeacherClassifier | None:
 
 def student_cost_per_1k(predictor: Predictor) -> float | None:
     """The served student's benchmarked cost per 1,000 predictions, if available."""
-    path = os.environ.get("DISTILLKIT_RESULTS")
+    path = os.environ.get("HEARTCUT_RESULTS")
     if not path or not Path(path).exists():
         return None
     results: dict[str, Any] = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -102,7 +102,7 @@ def compare(
     )
     if teacher is None:
         return student, (
-            "### Teacher: disabled\nSet `DISTILLKIT_TEACHER_CONFIG` and the matching API key "
+            "### Teacher: disabled\nSet `HEARTCUT_TEACHER_CONFIG` and the matching API key "
             "to compare with the LLM."
         )
     answer = asyncio.run(teacher.classify(text))
@@ -123,9 +123,9 @@ def build_demo(
 ) -> Any:
     import gradio as gr
 
-    with gr.Blocks(title="DistillKit: LLM vs. distilled student") as demo:
+    with gr.Blocks(title="Heartcut: LLM vs. distilled student") as demo:
         gr.Markdown(
-            "# DistillKit\nA tiny CPU model distilled from an LLM classifier. Type a "
+            "# Heartcut\nA tiny CPU model distilled from an LLM classifier. Type a "
             "customer message and compare the two."
         )
         message = gr.Textbox(label="Customer message", lines=2, placeholder=EXAMPLES[0])

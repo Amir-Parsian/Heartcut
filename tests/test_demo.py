@@ -39,9 +39,9 @@ def test_student_cost_from_results(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     demo = _demo()
     results = tmp_path / "results.json"
     results.write_text(json.dumps({"models": [{"name": "fixed", "cost_per_1k_usd": 0.004}]}))
-    monkeypatch.setenv("DISTILLKIT_RESULTS", str(results))
+    monkeypatch.setenv("HEARTCUT_RESULTS", str(results))
     assert demo.student_cost_per_1k(FixedPredictor()) == 0.004
-    monkeypatch.setenv("DISTILLKIT_RESULTS", str(tmp_path / "missing.json"))
+    monkeypatch.setenv("HEARTCUT_RESULTS", str(tmp_path / "missing.json"))
     assert demo.student_cost_per_1k(FixedPredictor()) is None
 
 
@@ -51,9 +51,9 @@ def test_teacher_is_disabled_without_key(tmp_path: Path, monkeypatch: pytest.Mon
     config.write_text(
         f"name: t\nbackend: anthropic\nmodel: m\napi_key_env: DEMO_KEY\nprompt: {PROMPT}\n"
     )
-    monkeypatch.delenv("DISTILLKIT_TEACHER_CONFIG", raising=False)
+    monkeypatch.delenv("HEARTCUT_TEACHER_CONFIG", raising=False)
     assert demo.load_teacher_classifier(FixedPredictor()) is None
-    monkeypatch.setenv("DISTILLKIT_TEACHER_CONFIG", str(config))
+    monkeypatch.setenv("HEARTCUT_TEACHER_CONFIG", str(config))
     monkeypatch.delenv("DEMO_KEY", raising=False)
     assert demo.load_teacher_classifier(FixedPredictor()) is None
     monkeypatch.setenv("DEMO_KEY", "k")
@@ -69,7 +69,7 @@ def test_build_demo_constructs_the_ui() -> None:
 
 def test_load_student_needs_a_model(monkeypatch: pytest.MonkeyPatch) -> None:
     demo = _demo()
-    monkeypatch.delenv("DISTILLKIT_MODEL_DIR", raising=False)
-    monkeypatch.delenv("DISTILLKIT_MODEL_REPO", raising=False)
+    monkeypatch.delenv("HEARTCUT_MODEL_DIR", raising=False)
+    monkeypatch.delenv("HEARTCUT_MODEL_REPO", raising=False)
     with pytest.raises(RuntimeError):
         demo.load_student()

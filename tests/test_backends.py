@@ -11,11 +11,11 @@ import httpx2
 import openai
 import pytest
 
-from distillkit.config import TeacherConfig
-from distillkit.teachers.backends.anthropic_backend import AnthropicBackend
-from distillkit.teachers.backends.openai_backend import OpenAICompatibleBackend
-from distillkit.teachers.base import FatalTeacherError, RetryableError, deep_merge
-from distillkit.teachers.prompts import ChatPrompt, label_schema
+from heartcut.config import TeacherConfig
+from heartcut.teachers.backends.anthropic_backend import AnthropicBackend
+from heartcut.teachers.backends.openai_backend import OpenAICompatibleBackend
+from heartcut.teachers.base import FatalTeacherError, RetryableError, deep_merge
+from heartcut.teachers.prompts import ChatPrompt, label_schema
 
 PROMPT = ChatPrompt(system="Pick a label.", user="<message>hi</message>", text="hi")
 SCHEMA = label_schema(["greet", "leave"])

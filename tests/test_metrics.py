@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from distillkit.eval.metrics import (
+from heartcut.eval.metrics import (
     INVALID,
     accuracy,
     confused_pairs,

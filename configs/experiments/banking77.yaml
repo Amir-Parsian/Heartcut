@@ -1,7 +1,7 @@
 # Flagship benchmark: Banking77 intent classification.
 #
 #   make benchmark                    # everything, from cached teacher labels
-#   distillkit label -c configs/experiments/banking77.yaml --dry-run   # cost estimate
+#   heartcut label -c configs/experiments/banking77.yaml --dry-run   # cost estimate
 #
 # The main teacher is an open question in the project spec; any file in
 # configs/teachers/ can be swapped in with `--set teacher=configs/teachers/<name>.yaml`.

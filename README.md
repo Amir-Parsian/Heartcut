@@ -1,22 +1,26 @@
-# DistillKit
+# Heartcut
 
-[![CI](https://github.com/Amir-Parsian/DistillKit/actions/workflows/ci.yml/badge.svg)](https://github.com/Amir-Parsian/DistillKit/actions/workflows/ci.yml)
+[![CI](https://github.com/Amir-Parsian/Heartcut/actions/workflows/ci.yml/badge.svg)](https://github.com/Amir-Parsian/Heartcut/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 
 **Replace an expensive LLM classifier with a tiny model that keeps most of its accuracy
-at a fraction of the cost and latency.** DistillKit labels your data with a teacher LLM,
+at a fraction of the cost and latency.** Heartcut labels your data with a teacher LLM,
 trains compact students on those labels, benchmarks teacher and students on the same
 human-labeled test set, and serves the winner on a CPU.
 
 Most teams now call an LLM API for simple, high-volume tasks such as ticket routing or
-intent tagging. DistillKit is a repeatable way to measure, and then cut, that bill.
+intent tagging. Heartcut is a repeatable way to measure, and then cut, that bill.
+
+The name comes from distilling: the *heart cut* is the clean middle of the run that the
+distiller keeps. Heartcut keeps the part of the LLM your task needs and leaves the
+expensive rest behind.
 
 ## Results
 
 <!-- results:start -->
 
-No benchmark results yet. This block is written by `distillkit report` from
+No benchmark results yet. This block is written by `heartcut report` from
 `results/<experiment>/results.json`, and only from that file, so the README can never
 show a number the benchmark did not produce. Simulated-teacher runs are refused.
 
@@ -50,27 +54,27 @@ student's cost and latency numbers hold outside a notebook.
 
 | Stage | Command | What it does |
 |---|---|---|
-| Data | `distillkit data` | Loads Banking77 / CLINC150 (or your task) into `id, text, label`; deterministic splits; moves train/validation labels to a hidden table. |
-| Label | `distillkit label` | Sends the unlabeled pool (and the test split, to score the teacher) to the teacher. Async, rate-limited, retried, cached by prompt hash, budget-capped; logs tokens and dollars per call. `--dry-run` estimates the cost first; `--offline` guarantees zero spend. |
-| Audit | `distillkit audit` | Teacher labels vs. the hidden human labels: accuracy, per-class errors, top confusions, agreement vs. correctness, effect of the confidence filter. |
-| Train | `distillkit train` | Three student tiers × labeling budgets × seeds, on teacher labels only, logged to MLflow. Hard or soft (distillation) labels. |
-| Benchmark | `distillkit benchmark` | Everything on the human-labeled test set: one table, a Pareto chart, a learning curve, error analysis, routing analysis, model card. |
-| Export | `distillkit export` | Best student (chosen on teacher-labeled validation data) to ONNX with dynamic int8 quantisation, parity-checked against the original. |
-| Serve | `distillkit serve` | FastAPI on CPU, optional fallback to the teacher below a confidence threshold. |
+| Data | `heartcut data` | Loads Banking77 / CLINC150 (or your task) into `id, text, label`; deterministic splits; moves train/validation labels to a hidden table. |
+| Label | `heartcut label` | Sends the unlabeled pool (and the test split, to score the teacher) to the teacher. Async, rate-limited, retried, cached by prompt hash, budget-capped; logs tokens and dollars per call. `--dry-run` estimates the cost first; `--offline` guarantees zero spend. |
+| Audit | `heartcut audit` | Teacher labels vs. the hidden human labels: accuracy, per-class errors, top confusions, agreement vs. correctness, effect of the confidence filter. |
+| Train | `heartcut train` | Three student tiers × labeling budgets × seeds, on teacher labels only, logged to MLflow. Hard or soft (distillation) labels. |
+| Benchmark | `heartcut benchmark` | Everything on the human-labeled test set: one table, a Pareto chart, a learning curve, error analysis, routing analysis, model card. |
+| Export | `heartcut export` | Best student (chosen on teacher-labeled validation data) to ONNX with dynamic int8 quantisation, parity-checked against the original. |
+| Serve | `heartcut serve` | FastAPI on CPU, optional fallback to the teacher below a confidence threshold. |
 
 ## Quickstart
 
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-git clone https://github.com/Amir-Parsian/DistillKit && cd DistillKit
+git clone https://github.com/Amir-Parsian/Heartcut && cd Heartcut
 uv sync --all-extras
 
 # 1. Free smoke run: the whole pipeline on a Banking77 slice with the simulated teacher.
 make smoke
 
 # 2. Reproduce the published benchmark from cached teacher labels (no API spend).
-make labels-pull LABELS_REPO=<user>/distillkit-banking77-labels
+make labels-pull LABELS_REPO=<user>/heartcut-banking77-labels
 make benchmark && make report
 
 # 3. Or label with a real teacher yourself.
@@ -83,7 +87,7 @@ Any config value can be changed from the command line, e.g. a cheaper teacher an
 200-example development slice:
 
 ```bash
-uv run distillkit label -c configs/experiments/banking77.yaml \
+uv run heartcut label -c configs/experiments/banking77.yaml \
     --set teacher=configs/teachers/claude-haiku-5-5.yaml \
     --set dataset.max_examples.train=200
 ```
@@ -117,9 +121,9 @@ from training and used once, by the audit, to measure teacher label quality.
 ## Serving
 
 ```bash
-uv run distillkit export -c configs/experiments/banking77.yaml   # prints the export dir
-docker build --build-arg MODEL_DIR=<export dir> -t distillkit-serve .
-docker run --rm -p 8000:8000 distillkit-serve
+uv run heartcut export -c configs/experiments/banking77.yaml   # prints the export dir
+docker build --build-arg MODEL_DIR=<export dir> -t heartcut-serve .
+docker run --rm -p 8000:8000 heartcut-serve
 
 curl -s localhost:8000/predict -H 'content-type: application/json' \
      -d '{"text": "My card still has not arrived"}'
@@ -128,8 +132,8 @@ curl -s localhost:8000/predict -H 'content-type: application/json' \
 
 `POST /predict` also takes `{"texts": [...]}` (up to 256). `GET /health` reports the
 model and router settings. The image contains no PyTorch: just ONNX Runtime,
-`tokenizers` and FastAPI. Set `DISTILLKIT_FALLBACK_THRESHOLD` and
-`DISTILLKIT_TEACHER_CONFIG` (build with `--build-arg EXTRAS=serve,teachers`) to send
+`tokenizers` and FastAPI. Set `HEARTCUT_FALLBACK_THRESHOLD` and
+`HEARTCUT_TEACHER_CONFIG` (build with `--build-arg EXTRAS=serve,teachers`) to send
 low-confidence predictions to the teacher; the benchmark's routing table shows what
 share of traffic that would be and the blended cost.
 
@@ -145,7 +149,7 @@ the worked example in [examples/helpdesk](examples/helpdesk).
 ## Project layout
 
 ```
-src/distillkit/
+src/heartcut/
 ├── data/        loaders, common schema, deterministic splits, hidden labels
 ├── teachers/    prompts, Anthropic + OpenAI-compatible backends, cache, runner, pricing
 ├── students/    TF-IDF, SetFit-style, encoder fine-tune, training stage

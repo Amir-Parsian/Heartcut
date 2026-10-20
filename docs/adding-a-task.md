@@ -1,6 +1,6 @@
 # Adding your own task
 
-DistillKit is task-agnostic: a new classification task needs a dataset config and, if
+Heartcut is task-agnostic: a new classification task needs a dataset config and, if
 none of the built-in loaders fits, a loader function. Nothing in `src/` changes. The
 worked example is [`examples/helpdesk`](../examples/helpdesk): IT tickets with a
 `subject`, a `body` and a `queue`.
@@ -37,7 +37,7 @@ integer ids.
 ```python
 # examples/helpdesk/loader.py
 import pandas as pd
-from distillkit.data.splits import stratified_split
+from heartcut.data.splits import stratified_split
 
 def load_tickets(path: str, test_fraction: float = 0.25, seed: int = 0) -> dict[str, pd.DataFrame]:
     raw = pd.read_json(path, lines=True)
@@ -47,7 +47,7 @@ def load_tickets(path: str, test_fraction: float = 0.25, seed: int = 0) -> dict[
 ```
 
 Point the config at it with a file path or a module path (both relative to where you
-run `distillkit`, usually the repository root); `args` are passed as keyword arguments:
+run `heartcut`, usually the repository root); `args` are passed as keyword arguments:
 
 ```yaml
 sources:
@@ -55,13 +55,13 @@ sources:
     args: {path: examples/helpdesk/tickets.jsonl}
 ```
 
-DistillKit takes it from there: it carves a stratified validation pool out of train if
+Heartcut takes it from there: it carves a stratified validation pool out of train if
 you did not return one, assigns ids, hides the train/validation labels from training, and
 records the source and counts in the stage manifest. If your test split has no human
 labels you can still label and train, but the benchmark needs them: get a few hundred
 test messages labeled by people first.
 
-`sources` is a list: DistillKit tries each source in order, which is how the Banking77
+`sources` is a list: Heartcut tries each source in order, which is how the Banking77
 config falls back from the Hugging Face Hub to the upstream CSV files.
 
 ## 3. Write the task description
@@ -86,10 +86,10 @@ budgets: [full]
 ```
 
 ```bash
-uv run distillkit data  -c examples/helpdesk/experiment.yaml     # check counts and labels
-uv run distillkit label -c examples/helpdesk/experiment.yaml --dry-run
-uv run distillkit run   -c examples/helpdesk/experiment.yaml --set teacher=configs/teachers/simulated.yaml
-uv run distillkit run   -c examples/helpdesk/experiment.yaml     # with the real teacher
+uv run heartcut data  -c examples/helpdesk/experiment.yaml     # check counts and labels
+uv run heartcut label -c examples/helpdesk/experiment.yaml --dry-run
+uv run heartcut run   -c examples/helpdesk/experiment.yaml --set teacher=configs/teachers/simulated.yaml
+uv run heartcut run   -c examples/helpdesk/experiment.yaml     # with the real teacher
 ```
 
 Start with the simulated teacher to check the plumbing for free, then a small slice

@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Renamed the project from DistillKit to Heartcut, because the old name is already used
+  by another LLM distillation toolkit. The package and CLI are now `heartcut`,
+  environment variables are `HEARTCUT_*` (for example `HEARTCUT_MODEL_DIR`), the default
+  cache directory is `.cache/heartcut`, and the serving image is `heartcut-serve`.
+
 ## [0.1.0] - 2026-10-19
 
 ### Added
@@ -32,5 +38,5 @@ All notable changes to this project are documented here. The format follows
 - CI: ruff, strict mypy, tests with an 80% coverage gate, Docker build and `/predict`
   smoke test.
 
-[Unreleased]: https://github.com/Amir-Parsian/DistillKit/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Amir-Parsian/DistillKit/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Amir-Parsian/Heartcut/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Amir-Parsian/Heartcut/releases/tag/v0.1.0

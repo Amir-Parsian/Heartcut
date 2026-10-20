@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping. DistillKit aims to read like production code, so changes come with
+Thanks for helping. Heartcut aims to read like production code, so changes come with
 tests and stay small enough to review.
 
 ## Setup
@@ -20,7 +20,7 @@ make lint typecheck test
 - **Never tune on the test set.** Anything that chooses (hyperparameters, seeds, the
   exported student, thresholds) must use teacher-labeled validation data.
 - **Never hand-write benchmark numbers.** README results come from
-  `distillkit report`; results produced with the simulated teacher are not published.
+  `heartcut report`; results produced with the simulated teacher are not published.
 - **No secrets in the repo.** API keys are read from environment variables only;
   `.env` is git-ignored and `.env.example` documents the names.
 - Keep `mypy --strict` and `ruff` clean, keep coverage of `src/` at 80% or more, and add

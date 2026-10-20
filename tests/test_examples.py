@@ -1,12 +1,12 @@
-"""The example custom task works with no changes to DistillKit's code."""
+"""The example custom task works with no changes to Heartcut's code."""
 
 from __future__ import annotations
 
 import pytest
 
-from distillkit.config import load_experiment
-from distillkit.data import loaders
-from distillkit.data.prepare import prepare_data
+from heartcut.config import load_experiment
+from heartcut.data import loaders
+from heartcut.data.prepare import prepare_data
 from tests.conftest import REPO
 
 

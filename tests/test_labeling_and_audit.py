@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from distillkit.data.prepare import prepare_data
-from distillkit.eval.audit import filter_by_confidence, run_audit
-from distillkit.teachers.labeling import (
+from heartcut.data.prepare import prepare_data
+from heartcut.eval.audit import filter_by_confidence, run_audit
+from heartcut.teachers.labeling import (
     CALLS_FILE,
     COST_REPORT,
     dry_run_estimate,
@@ -19,7 +19,7 @@ from distillkit.teachers.labeling import (
     run_labeling,
     soft_label_matrix,
 )
-from distillkit.teachers.runner import CacheMiss
+from heartcut.teachers.runner import CacheMiss
 
 
 def test_labeling_stage_outputs(make_experiment) -> None:  # type: ignore[no-untyped-def]

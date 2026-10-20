@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.7
-# CPU-only serving image for an exported DistillKit student (no PyTorch inside).
+# CPU-only serving image for an exported Heartcut student (no PyTorch inside).
 #
-#   distillkit export -c configs/experiments/banking77.yaml      # prints the export dir
-#   docker build --build-arg MODEL_DIR=<export dir> -t distillkit-serve .
-#   docker run --rm -p 8000:8000 distillkit-serve
+#   heartcut export -c configs/experiments/banking77.yaml      # prints the export dir
+#   docker build --build-arg MODEL_DIR=<export dir> -t heartcut-serve .
+#   docker run --rm -p 8000:8000 heartcut-serve
 #
 # Build args:
 #   MODEL_DIR     exported model directory to bake in (default: ./model)
@@ -37,10 +37,10 @@ ARG MODEL_DIR=model
 COPY ${MODEL_DIR} /models/student
 ENV PATH=/opt/venv/bin:$PATH \
     PYTHONUNBUFFERED=1 \
-    DISTILLKIT_MODEL_DIR=/models/student
+    HEARTCUT_MODEL_DIR=/models/student
 WORKDIR /app
 USER app
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"
-CMD ["uvicorn", "distillkit.serve.app:app_from_env", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "heartcut.serve.app:app_from_env", "--factory", "--host", "0.0.0.0", "--port", "8000"]

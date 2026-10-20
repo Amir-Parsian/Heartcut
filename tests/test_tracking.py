@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from distillkit.config import TrackingConfig
-from distillkit.tracking import flatten, start_run
+from heartcut.config import TrackingConfig
+from heartcut.tracking import flatten, start_run
 
 
 def test_flatten() -> None:

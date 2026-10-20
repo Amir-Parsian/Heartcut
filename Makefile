@@ -30,43 +30,43 @@ test-fast:  ## Skip tests that train neural students
 	$(RUN) pytest -m "not slow"
 
 data:  ## Load the dataset into the common schema
-	$(RUN) distillkit data -c $(EXPERIMENT)
+	$(RUN) heartcut data -c $(EXPERIMENT)
 
 label-dry-run:  ## Estimate the teacher labeling cost
-	$(RUN) distillkit label -c $(EXPERIMENT) --dry-run
+	$(RUN) heartcut label -c $(EXPERIMENT) --dry-run
 
 label:  ## Label with the teacher (uses the cache; spends money on misses)
-	$(RUN) distillkit label -c $(EXPERIMENT)
+	$(RUN) heartcut label -c $(EXPERIMENT)
 
 audit:  ## Teacher label quality vs. hidden human labels
-	$(RUN) distillkit audit -c $(EXPERIMENT)
+	$(RUN) heartcut audit -c $(EXPERIMENT)
 
 train:  ## Train every student x budget x seed
-	$(RUN) distillkit train -c $(EXPERIMENT)
+	$(RUN) heartcut train -c $(EXPERIMENT)
 
 labels-pull:  ## Fetch published teacher labels (LABELS_REPO=<user/dataset>)
-	$(RUN) distillkit labels pull -c $(EXPERIMENT) --repo-id $(LABELS_REPO)
+	$(RUN) heartcut labels pull -c $(EXPERIMENT) --repo-id $(LABELS_REPO)
 
 benchmark:  ## Regenerate every number and chart from cached teacher labels (no API spend)
-	$(RUN) distillkit run -c $(EXPERIMENT) --offline
+	$(RUN) heartcut run -c $(EXPERIMENT) --offline
 
 report:  ## Write the README results section from results.json
-	$(RUN) distillkit report -c $(EXPERIMENT)
+	$(RUN) heartcut report -c $(EXPERIMENT)
 
 export:  ## Export the best student to ONNX int8
-	$(RUN) distillkit export -c $(EXPERIMENT)
+	$(RUN) heartcut export -c $(EXPERIMENT)
 
 serve:  ## Serve the exported student locally (MODEL=<export dir>)
-	$(RUN) distillkit serve --model $(MODEL)
+	$(RUN) heartcut serve --model $(MODEL)
 
 docker:  ## Build the CPU serving image (MODEL=<export dir>)
-	docker build --build-arg MODEL_DIR=$(MODEL) -t distillkit-serve .
+	docker build --build-arg MODEL_DIR=$(MODEL) -t heartcut-serve .
 
 demo:  ## Gradio demo (MODEL=<export dir>)
-	DISTILLKIT_MODEL_DIR=$(MODEL) $(RUN) python demo/app.py
+	HEARTCUT_MODEL_DIR=$(MODEL) $(RUN) python demo/app.py
 
 smoke:  ## Whole pipeline on a small Banking77 slice with the simulated teacher (free)
-	$(RUN) distillkit run -c $(EXPERIMENT) \
+	$(RUN) heartcut run -c $(EXPERIMENT) \
 		--set teacher=configs/teachers/simulated.yaml \
 		--set dataset.max_examples.train=1000 --set dataset.max_examples.test=500 \
 		--set students=[configs/students/tfidf-logreg.yaml] --set seeds=[0] \

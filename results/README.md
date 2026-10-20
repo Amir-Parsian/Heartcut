@@ -1,7 +1,7 @@
 # Results
 
 Benchmark outputs, committed so the README and the blog post can link to them. One
-directory per experiment, written by `distillkit benchmark` (and `distillkit audit`):
+directory per experiment, written by `heartcut benchmark` (and `heartcut audit`):
 
 | File | Contents |
 |---|---|

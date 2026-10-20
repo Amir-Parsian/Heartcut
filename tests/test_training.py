@@ -2,19 +2,19 @@ from __future__ import annotations
 
 import pytest
 
-import distillkit.data.prepare as prepare_module
-import distillkit.eval.audit as audit_module
-import distillkit.teachers.labeling as labeling_module
-from distillkit.data.prepare import prepare_data
-from distillkit.students import Student
-from distillkit.students.training import (
+import heartcut.data.prepare as prepare_module
+import heartcut.eval.audit as audit_module
+import heartcut.teachers.labeling as labeling_module
+from heartcut.data.prepare import prepare_data
+from heartcut.students import Student
+from heartcut.students.training import (
     PREDICTIONS_FILE,
     load_trained_student,
     run_training,
     select_budget,
     student_run_dir,
 )
-from distillkit.teachers.labeling import load_teacher_labels, run_labeling
+from heartcut.teachers.labeling import load_teacher_labels, run_labeling
 
 
 def _ready(cfg):  # type: ignore[no-untyped-def]

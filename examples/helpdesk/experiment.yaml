@@ -1,7 +1,7 @@
 # Run from the repository root:
-#   uv run distillkit data  -c examples/helpdesk/experiment.yaml
-#   uv run distillkit label -c examples/helpdesk/experiment.yaml --dry-run
-#   uv run distillkit run   -c examples/helpdesk/experiment.yaml \
+#   uv run heartcut data  -c examples/helpdesk/experiment.yaml
+#   uv run heartcut label -c examples/helpdesk/experiment.yaml --dry-run
+#   uv run heartcut run   -c examples/helpdesk/experiment.yaml \
 #       --set teacher=configs/teachers/simulated.yaml          # free, for a dry run
 name: helpdesk
 dataset: dataset.yaml

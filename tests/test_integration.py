@@ -22,15 +22,15 @@ pytest.importorskip("onnxruntime")
 
 from fastapi.testclient import TestClient
 
-from distillkit.config import ExperimentConfig
-from distillkit.data.prepare import prepare_data
-from distillkit.eval.audit import run_audit
-from distillkit.eval.benchmark import run_benchmark
-from distillkit.eval.report import END, START, update_readme
-from distillkit.serve.app import Service, create_app
-from distillkit.serve.runtime import load_predictor
-from distillkit.teachers.backends import openai_backend
-from distillkit.teachers.labeling import run_labeling
+from heartcut.config import ExperimentConfig
+from heartcut.data.prepare import prepare_data
+from heartcut.eval.audit import run_audit
+from heartcut.eval.benchmark import run_benchmark
+from heartcut.eval.report import END, START, update_readme
+from heartcut.serve.app import Service, create_app
+from heartcut.serve.runtime import load_predictor
+from heartcut.teachers.backends import openai_backend
+from heartcut.teachers.labeling import run_labeling
 from tests.conftest import PROMPT, experiment_dict
 from tests.synthetic import INTENTS
 

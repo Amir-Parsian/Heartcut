@@ -6,7 +6,7 @@ from pathlib import Path
 import yaml
 from typer.testing import CliRunner
 
-from distillkit.cli import app
+from heartcut.cli import app
 from tests.conftest import experiment_dict
 
 runner = CliRunner()
@@ -21,7 +21,7 @@ def _config_file(tmp_path: Path, dataset_files: dict[str, Path], **overrides: ob
 def test_version() -> None:
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert "distillkit" in result.output
+    assert "heartcut" in result.output
 
 
 def test_stage_commands(tmp_path: Path, dataset_files: dict[str, Path]) -> None:

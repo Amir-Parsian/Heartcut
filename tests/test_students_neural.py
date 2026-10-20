@@ -12,10 +12,10 @@ pytest.importorskip("sentence_transformers")
 
 import torch
 
-from distillkit.config import EncoderStudentConfig, SetFitStudentConfig
-from distillkit.students import Student, TrainingData, build_student
-from distillkit.students.setfit import make_pairs
-from distillkit.students.torch_utils import distillation_loss
+from heartcut.config import EncoderStudentConfig, SetFitStudentConfig
+from heartcut.students import Student, TrainingData, build_student
+from heartcut.students.setfit import make_pairs
+from heartcut.students.torch_utils import distillation_loss
 from tests.synthetic import INTENTS, generate
 
 LABELS = sorted(INTENTS)

@@ -8,13 +8,13 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
-from distillkit.config import TeacherConfig, TfidfStudentConfig, TokenPricing
-from distillkit.serve.app import Service, create_app, service_from_env
-from distillkit.serve.export import export_student
-from distillkit.serve.router import FallbackRouter, TeacherClassifier
-from distillkit.students import TrainingData, build_student
-from distillkit.teachers.base import Completion, FatalTeacherError, TeacherBackend
-from distillkit.teachers.prompts import ChatPrompt
+from heartcut.config import TeacherConfig, TfidfStudentConfig, TokenPricing
+from heartcut.serve.app import Service, create_app, service_from_env
+from heartcut.serve.export import export_student
+from heartcut.serve.router import FallbackRouter, TeacherClassifier
+from heartcut.students import TrainingData, build_student
+from heartcut.teachers.base import Completion, FatalTeacherError, TeacherBackend
+from heartcut.teachers.prompts import ChatPrompt
 from tests.conftest import PROMPT
 from tests.synthetic import INTENTS, generate
 
@@ -147,16 +147,16 @@ def test_service_from_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> No
         seed=0,
     )
     export_student(student, tmp_path / "model", ["x"], extra_meta={"task": "banking"})
-    monkeypatch.delenv("DISTILLKIT_FALLBACK_THRESHOLD", raising=False)
-    monkeypatch.delenv("DISTILLKIT_MODEL_DIR", raising=False)
-    with pytest.raises(RuntimeError, match="DISTILLKIT_MODEL_DIR"):
+    monkeypatch.delenv("HEARTCUT_FALLBACK_THRESHOLD", raising=False)
+    monkeypatch.delenv("HEARTCUT_MODEL_DIR", raising=False)
+    with pytest.raises(RuntimeError, match="HEARTCUT_MODEL_DIR"):
         service_from_env()
-    monkeypatch.setenv("DISTILLKIT_MODEL_DIR", str(tmp_path / "model"))
-    monkeypatch.setenv("DISTILLKIT_THREADS", "1")
+    monkeypatch.setenv("HEARTCUT_MODEL_DIR", str(tmp_path / "model"))
+    monkeypatch.setenv("HEARTCUT_THREADS", "1")
     service = service_from_env()
     assert service.router is None and service.predictor.name == "tfidf"
 
-    monkeypatch.setenv("DISTILLKIT_FALLBACK_THRESHOLD", "0.4")
+    monkeypatch.setenv("HEARTCUT_FALLBACK_THRESHOLD", "0.4")
     with pytest.raises(RuntimeError, match="TEACHER_CONFIG"):
         service_from_env()
     teacher_file = tmp_path / "teacher.yaml"
@@ -164,7 +164,7 @@ def test_service_from_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> No
         f"name: local\nbackend: openai\nmodel: m\nbase_url: http://localhost:9/v1\n"
         f"prompt: {PROMPT}\nis_local: true\n"
     )
-    monkeypatch.setenv("DISTILLKIT_TEACHER_CONFIG", str(teacher_file))
+    monkeypatch.setenv("HEARTCUT_TEACHER_CONFIG", str(teacher_file))
     service = service_from_env()
     assert service.router is not None and service.router.threshold == 0.4
     assert service.router.teacher.task == "banking"

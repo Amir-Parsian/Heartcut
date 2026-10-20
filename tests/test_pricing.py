@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from distillkit.config import TeacherConfig, TokenPricing
-from distillkit.teachers.base import Completion
-from distillkit.teachers.pricing import completion_cost, estimate_cost, resolve_pricing
+from heartcut.config import TeacherConfig, TokenPricing
+from heartcut.teachers.base import Completion
+from heartcut.teachers.pricing import completion_cost, estimate_cost, resolve_pricing
 
 
 def _teacher(**kw: object) -> TeacherConfig:

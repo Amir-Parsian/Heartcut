@@ -6,9 +6,9 @@ from typing import Any, ClassVar
 
 import pytest
 
-from distillkit.data.prepare import prepare_data
-from distillkit.teachers import hub
-from distillkit.teachers.labeling import labels_stage, run_labeling
+from heartcut.data.prepare import prepare_data
+from heartcut.teachers import hub
+from heartcut.teachers.labeling import labels_stage, run_labeling
 
 huggingface_hub = pytest.importorskip("huggingface_hub")
 

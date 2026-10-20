@@ -74,13 +74,13 @@ jobs:
         with:
           context: .
           load: true
-          tags: distillkit-serve:ci
+          tags: heartcut-serve:ci
           build-args: MODEL_DIR=build/smoke-model
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: serve /health and /predict
         run: |
-          docker run -d --name svc -p 8000:8000 distillkit-serve:ci
+          docker run -d --name svc -p 8000:8000 heartcut-serve:ci
           for i in $(seq 1 30); do curl -fs localhost:8000/health && break; sleep 1; done
           curl -fs localhost:8000/health | tee health.json
           curl -fs -X POST localhost:8000/predict -H 'content-type: application/json' \

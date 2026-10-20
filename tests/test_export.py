@@ -5,15 +5,15 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from distillkit.config import (
+from heartcut.config import (
     EncoderStudentConfig,
     ExperimentConfig,
     SetFitStudentConfig,
     TfidfStudentConfig,
 )
-from distillkit.serve import export as export_module
-from distillkit.serve.export import best_seed, best_student_name, export_student
-from distillkit.serve.runtime import (
+from heartcut.serve import export as export_module
+from heartcut.serve.export import best_seed, best_student_name, export_student
+from heartcut.serve.runtime import (
     OnnxPredictor,
     artifact_size_mb,
     load_predictor,
@@ -21,7 +21,7 @@ from distillkit.serve.runtime import (
     read_export_meta,
     softmax,
 )
-from distillkit.students import Student, TrainingData, build_student
+from heartcut.students import Student, TrainingData, build_student
 from tests.synthetic import INTENTS, generate
 
 LABELS = sorted(INTENTS)

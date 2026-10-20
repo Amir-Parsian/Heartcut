@@ -5,10 +5,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from distillkit.config import TfidfStudentConfig
-from distillkit.students import Student, TrainingData, build_student
-from distillkit.students.base import expand_soft_targets, full_proba
-from distillkit.students.registry import student_class
+from heartcut.config import TfidfStudentConfig
+from heartcut.students import Student, TrainingData, build_student
+from heartcut.students.base import expand_soft_targets, full_proba
+from heartcut.students.registry import student_class
 from tests.synthetic import INTENTS, generate
 
 LABELS = sorted(INTENTS)

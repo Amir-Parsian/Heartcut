@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from distillkit.data.prepare import prepare_data
-from distillkit.eval import cost
-from distillkit.eval.benchmark import RESULTS_JSON, load_results, routing_table, run_benchmark
-from distillkit.eval.charts import pareto_frontier
-from distillkit.eval.latency import measure_latency, measure_throughput
-from distillkit.eval.report import (
+from heartcut.data.prepare import prepare_data
+from heartcut.eval import cost
+from heartcut.eval.benchmark import RESULTS_JSON, load_results, routing_table, run_benchmark
+from heartcut.eval.charts import pareto_frontier
+from heartcut.eval.latency import measure_latency, measure_throughput
+from heartcut.eval.report import (
     END,
     START,
     SimulatedResultsError,
@@ -22,7 +22,7 @@ from distillkit.eval.report import (
     replace_section,
     update_readme,
 )
-from distillkit.teachers.labeling import run_labeling
+from heartcut.teachers.labeling import run_labeling
 
 
 @pytest.fixture

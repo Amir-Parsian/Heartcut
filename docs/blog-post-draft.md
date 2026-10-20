@@ -11,7 +11,7 @@ the latency grow with traffic, and the model is far bigger than the task needs.
 
 The alternative is old: knowledge distillation. Let the big model label data once, then
 train a small model on those labels. What has changed is how cheap the labeling step is.
-I built DistillKit to measure the trade-off honestly, end to end.
+I built Heartcut to measure the trade-off honestly, end to end.
 
 ## Setup
 

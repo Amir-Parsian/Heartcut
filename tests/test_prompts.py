@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from distillkit.teachers.prompts import PromptTemplate, label_schema, parse_label
+from heartcut.teachers.prompts import PromptTemplate, label_schema, parse_label
 from tests.conftest import PROMPT
 
 LABELS = ["card_arrival", "lost_or_stolen_card", "Refund_not_showing_up", "oos"]

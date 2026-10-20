@@ -1,6 +1,6 @@
 # Design notes
 
-Why DistillKit is built the way it is. Each section states the decision, the reason,
+Why Heartcut is built the way it is. Each section states the decision, the reason,
 and what it costs.
 
 ## 1. Stages with fingerprinted outputs
@@ -127,7 +127,7 @@ caller experiences.
 
 ## 9. Honesty mechanisms
 
-- README numbers are generated from `results.json` (`distillkit report`, with `--check`).
+- README numbers are generated from `results.json` (`heartcut report`, with `--check`).
 - Results from the simulated teacher are watermarked and refused by the README generator.
 - Prices carry an `as_of` date; the CPU price ships marked "unverified" until checked.
 - Costs are reported as unknown, never as zero, for models without a known price.

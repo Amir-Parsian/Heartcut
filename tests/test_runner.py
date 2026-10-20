@@ -6,13 +6,13 @@ from typing import Any
 
 import pytest
 
-from distillkit.config import TeacherConfig, TokenPricing
-from distillkit.teachers.backends import build_backend
-from distillkit.teachers.base import Completion, FatalTeacherError, RetryableError, TeacherBackend
-from distillkit.teachers.cache import CompletionCache
-from distillkit.teachers.prompts import ChatPrompt, PromptTemplate
-from distillkit.teachers.ratelimit import AsyncRateLimiter, backoff_delay, call_with_retries
-from distillkit.teachers.runner import (
+from heartcut.config import TeacherConfig, TokenPricing
+from heartcut.teachers.backends import build_backend
+from heartcut.teachers.base import Completion, FatalTeacherError, RetryableError, TeacherBackend
+from heartcut.teachers.cache import CompletionCache
+from heartcut.teachers.prompts import ChatPrompt, PromptTemplate
+from heartcut.teachers.ratelimit import AsyncRateLimiter, backoff_delay, call_with_retries
+from heartcut.teachers.runner import (
     BudgetExceeded,
     CacheMiss,
     LabelingRunner,

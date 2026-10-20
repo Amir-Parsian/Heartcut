@@ -20,9 +20,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tests.synthetic import INTENTS, generate
 from tests.tiny_models import build_tiny_bert
 
-from distillkit.config import EncoderStudentConfig
-from distillkit.serve.export import export_student
-from distillkit.students import TrainingData, build_student
+from heartcut.config import EncoderStudentConfig
+from heartcut.serve.export import export_student
+from heartcut.students import TrainingData, build_student
 
 
 def main(out: Path) -> None:

@@ -11,7 +11,7 @@ os.environ.setdefault("HF_HUB_OFFLINE", "1")  # tests never download models
 os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
-from distillkit.config import ExperimentConfig, load_experiment
+from heartcut.config import ExperimentConfig, load_experiment
 from tests.synthetic import write_dataset
 
 REPO = Path(__file__).resolve().parents[1]
@@ -23,7 +23,7 @@ ExperimentFactory = Callable[..., ExperimentConfig]
 @pytest.fixture(autouse=True)
 def _isolated_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Every test gets its own download and teacher cache."""
-    monkeypatch.setenv("DISTILLKIT_CACHE_DIR", str(tmp_path / "cache"))
+    monkeypatch.setenv("HEARTCUT_CACHE_DIR", str(tmp_path / "cache"))
 
 
 @pytest.fixture

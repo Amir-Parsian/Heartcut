@@ -12,7 +12,7 @@ labels: bug
 Command(s), the experiment config (or its `--set` overrides), and the stage that failed.
 
 **Environment**
-`distillkit --version`, Python version, OS, CPU/GPU, and whether you used a real or the
+`heartcut --version`, Python version, OS, CPU/GPU, and whether you used a real or the
 simulated teacher. Please do not paste API keys or `.env` contents.
 
 **Logs**

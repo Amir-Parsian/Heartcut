@@ -49,6 +49,6 @@ teacher (single call) instead, and the blended cost: student cost + share × tea
 - Seeds fix data sampling, initialisation and shuffling; dependencies are pinned in
   `uv.lock`.
 - Teacher answers are cached by prompt hash, and can be shared with
-  `distillkit labels push/pull`, so `make benchmark` reruns everything with no API spend.
+  `heartcut labels push/pull`, so `make benchmark` reruns everything with no API spend.
 - `results.json` records CPU, core count, thread count, platform, Python and library
   versions, git revision, the date of the teacher price table and the CPU instance price.

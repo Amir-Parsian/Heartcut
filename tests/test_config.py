@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from distillkit.config import (
+from heartcut.config import (
     ExperimentConfig,
     TeacherConfig,
     apply_overrides,
