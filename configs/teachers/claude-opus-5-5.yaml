@@ -1,0 +1,17 @@
+# Hosted teacher: Claude Opus 5.5 via the Anthropic Messages API.
+# Requires ANTHROPIC_API_KEY. Thinking cannot be disabled on this model, so effort is set
+# to "low" (classification gains little from deep reasoning) and max_output_tokens leaves
+# room for the thinking tokens that precede the JSON answer.
+name: claude-opus-5-5
+backend: anthropic
+model: claude-opus-5-5
+api_key_env: ANTHROPIC_API_KEY
+prompt: ../../prompts/intent_classification.yaml
+structured_output: json_schema      # output constrained to {"label": <enum of labels>}
+max_output_tokens: 1024
+request_options:
+  output_config: {effort: low}
+self_consistency: 1                 # set to 3 or 5 for vote-based confidence and soft labels
+concurrency: 8
+requests_per_minute: 300
+max_budget_usd: 50                  # hard stop; finished calls stay cached

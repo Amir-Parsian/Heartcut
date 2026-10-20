@@ -140,6 +140,11 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+# PyTorch training/export code calls into partially annotated torch/transformers APIs.
+module = ["distillkit.students.encoder", "distillkit.students.setfit", "distillkit.serve.export"]
+disallow_untyped_calls = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"

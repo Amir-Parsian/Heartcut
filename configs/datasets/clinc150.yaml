@@ -1,0 +1,21 @@
+# CLINC150 (Larson et al., 2019), "plus" variant: 150 in-scope intents across 10
+# domains plus an out-of-scope class (250 oos training examples, 1,000 oos test).
+# License: CC BY 3.0. https://github.com/clinc/oos-eval
+name: clinc150
+description: Multi-domain assistant queries, 150 intents plus out-of-scope.
+task: intent classification of short virtual-assistant requests, including an "oos" (out-of-scope) class for requests that match none of the intents
+oos_label: oos
+seed: 13
+sources:
+  - loader: huggingface
+    args:
+      path: clinc/clinc_oos
+      name: plus
+      text_column: text
+      label_column: intent
+      splits: {train: train, validation: validation, test: test}
+  - loader: clinc_json
+    args:
+      file: https://raw.githubusercontent.com/clinc/oos-eval/master/data/data_oos_plus.json
+      include_oos: true
+      oos_label: oos

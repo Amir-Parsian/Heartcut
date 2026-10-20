@@ -1,0 +1,16 @@
+.git
+.venv
+.cache
+.mypy_cache
+.ruff_cache
+.pytest_cache
+**/__pycache__
+mlruns
+results
+docs
+demo
+tests
+# Keep exported models (artifacts/*/export/...) available as MODEL_DIR; skip the rest.
+artifacts/*/data
+artifacts/*/labels
+artifacts/*/students

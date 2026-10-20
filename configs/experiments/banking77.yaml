@@ -1,0 +1,38 @@
+# Flagship benchmark: Banking77 intent classification.
+#
+#   make benchmark                    # everything, from cached teacher labels
+#   distillkit label -c configs/experiments/banking77.yaml --dry-run   # cost estimate
+#
+# The main teacher is an open question in the project spec; any file in
+# configs/teachers/ can be swapped in with `--set teacher=configs/teachers/<name>.yaml`.
+name: banking77
+dataset: ../datasets/banking77.yaml
+teacher: ../teachers/claude-opus-5-5.yaml
+students:
+  - ../students/tfidf-logreg.yaml
+  - ../students/setfit-minilm.yaml
+  - ../students/encoder-distilbert.yaml
+seeds: [0, 1, 2]
+# Labeling-budget experiment: students trained on the first N teacher-labeled examples.
+budgets: [500, 2000, 5000, full]
+label_filter:
+  min_confidence: null        # e.g. 0.6 with self_consistency >= 3
+tracking:
+  backend: mlflow
+  tracking_uri: sqlite:///mlruns.db
+benchmark:
+  cpu:
+    # Measured throughput is converted to dollars at this instance's hourly price.
+    instance: AWS c7i.xlarge (4 vCPU, on-demand, us-east-1)
+    usd_per_hour: 0.1785
+    price_as_of: "unverified - check before publishing"
+    source: https://aws.amazon.com/ec2/pricing/on-demand/
+  latency:
+    warmup: 20
+    requests: 300
+    throughput_batch_size: 64
+    throughput_seconds: 5
+    threads: 4
+export:
+  student: best
+  quantize: true

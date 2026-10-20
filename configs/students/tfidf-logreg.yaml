@@ -1,0 +1,10 @@
+# Baseline tier (~ a few MB, sub-millisecond on CPU): TF-IDF word 1-2 grams and
+# character 2-5 grams, multinomial logistic regression.
+name: tfidf-logreg
+kind: tfidf
+params:
+  word_ngram_range: [1, 2]
+  char_ngram_range: [2, 5]
+  min_df: 1
+  sublinear_tf: true
+  C: 10.0

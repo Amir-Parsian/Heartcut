@@ -1,0 +1,13 @@
+# Medium tier (66M parameters): DistilBERT fine-tuned end to end with a classification
+# head. Trains in a few minutes on one consumer GPU or a free Colab T4.
+name: encoder-distilbert
+kind: encoder
+params:
+  model_name: distilbert-base-uncased
+  max_length: 64
+  epochs: 5
+  batch_size: 32
+  learning_rate: 5.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  early_stopping_patience: 2

@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1.7
+# CPU-only serving image for an exported DistillKit student (no PyTorch inside).
+#
+#   distillkit export -c configs/experiments/banking77.yaml      # prints the export dir
+#   docker build --build-arg MODEL_DIR=<export dir> -t distillkit-serve .
+#   docker run --rm -p 8000:8000 distillkit-serve
+#
+# Build args:
+#   MODEL_DIR     exported model directory to bake in (default: ./model)
+#   EXTRAS        comma-separated extras; add "teachers" to enable the fallback router
+#   PYTHON_IMAGE  base image (any Debian-based CPython 3.11+)
+ARG PYTHON_IMAGE=python:3.11-slim
+
+FROM ${PYTHON_IMAGE} AS builder
+ARG UV_VERSION=0.11.32
+ARG EXTRAS=serve
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_PROJECT_ENVIRONMENT=/opt/venv
+RUN pip install --no-cache-dir "uv==${UV_VERSION}"
+WORKDIR /src
+# Dependencies first, so code changes do not invalidate the dependency layer.
+COPY pyproject.toml uv.lock README.md LICENSE ./
+RUN set -eu; args=""; for e in $(echo "$EXTRAS" | tr ',' ' '); do args="$args --extra $e"; done; \
+    uv sync --frozen --no-dev --no-install-project $args
+COPY src ./src
+RUN set -eu; args=""; for e in $(echo "$EXTRAS" | tr ',' ' '); do args="$args --extra $e"; done; \
+    uv sync --frozen --no-dev --no-editable $args
+
+FROM ${PYTHON_IMAGE}
+RUN useradd --create-home --uid 1000 app
+COPY --from=builder /opt/venv /opt/venv
+COPY prompts /app/prompts
+COPY configs /app/configs
+ARG MODEL_DIR=model
+COPY ${MODEL_DIR} /models/student
+ENV PATH=/opt/venv/bin:$PATH \
+    PYTHONUNBUFFERED=1 \
+    DISTILLKIT_MODEL_DIR=/models/student
+WORKDIR /app
+USER app
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"
+CMD ["uvicorn", "distillkit.serve.app:app_from_env", "--factory", "--host", "0.0.0.0", "--port", "8000"]

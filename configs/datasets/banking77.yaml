@@ -1,0 +1,25 @@
+# Banking77 (Casanueva et al., 2020): 13,083 online-banking queries, 77 intents.
+# License: CC BY 4.0. https://github.com/PolyAI-LDN/task-specific-datasets
+name: banking77
+description: Fine-grained online-banking customer queries (77 intents).
+task: intent classification of short online-banking customer-support messages
+# The official release has train (10,003) and test (3,080) only, so 10% of train is
+# carved out (stratified, seeded) as a validation pool. It is labeled by the teacher too.
+validation_fraction: 0.1
+seed: 13
+sources:
+  # Tried in order. Both are the same official data; the second one is the upstream
+  # CSV release, used when the Hugging Face Hub is unreachable.
+  - loader: huggingface
+    args:
+      path: PolyAI/banking77
+      text_column: text
+      label_column: label
+      splits: {train: train, test: test}
+  - loader: csv
+    args:
+      files:
+        train: https://raw.githubusercontent.com/PolyAI-LDN/task-specific-datasets/master/banking_data/train.csv
+        test: https://raw.githubusercontent.com/PolyAI-LDN/task-specific-datasets/master/banking_data/test.csv
+      text_column: text
+      label_column: category

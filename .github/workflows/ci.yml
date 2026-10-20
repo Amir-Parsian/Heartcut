@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# CI never calls a paid API: tests use mocked HTTP transports and the simulated teacher,
+# and no API keys are configured as secrets.
+env:
+  UV_FROZEN: "1"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - name: ruff
+        run: |
+          uv run ruff check src tests scripts demo examples
+          uv run ruff format --check src tests scripts demo examples
+      - name: mypy
+        run: uv run mypy
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --all-extras
+      - name: pytest (fails below 80% coverage of src/)
+        run: uv run pytest --cov --cov-report=term --cov-report=xml
+      - name: build a tiny exported model for the image smoke test
+        if: matrix.python-version == '3.11'
+        run: uv run python scripts/make_smoke_model.py build/smoke-model
+      - uses: actions/upload-artifact@v4
+        if: matrix.python-version == '3.11'
+        with:
+          name: smoke-model
+          path: build/smoke-model
+      - uses: actions/upload-artifact@v4
+        if: matrix.python-version == '3.11'
+        with:
+          name: coverage
+          path: coverage.xml
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: smoke-model
+          path: build/smoke-model
+      - uses: docker/setup-buildx-action@v3
+      - name: build the CPU serving image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: distillkit-serve:ci
+          build-args: MODEL_DIR=build/smoke-model
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: serve /health and /predict
+        run: |
+          docker run -d --name svc -p 8000:8000 distillkit-serve:ci
+          for i in $(seq 1 30); do curl -fs localhost:8000/health && break; sleep 1; done
+          curl -fs localhost:8000/health | tee health.json
+          curl -fs -X POST localhost:8000/predict -H 'content-type: application/json' \
+            -d '{"text": "where is my new card"}' | tee single.json
+          curl -fs -X POST localhost:8000/predict -H 'content-type: application/json' \
+            -d '{"texts": ["cancel my transfer", "close my account"]}' | tee batch.json
+          python3 - <<'PY'
+          import json
+          single = json.load(open("single.json"))
+          batch = json.load(open("batch.json"))
+          assert json.load(open("health.json"))["status"] == "ok"
+          assert single["label"] and 0 <= single["confidence"] <= 1 and single["latency_ms"] >= 0
+          assert len(batch["predictions"]) == 2
+          print("serving image OK")
+          PY
+      - name: container logs
+        if: always()
+        run: docker logs svc || true
