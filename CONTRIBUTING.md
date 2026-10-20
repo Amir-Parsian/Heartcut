@@ -32,6 +32,17 @@ One topic per pull request, with a description of what changed and why, and how 
 tested. Update `CHANGELOG.md` under *Unreleased* for user-visible changes. If a change
 affects results, say which numbers move and attach the regenerated `results.md`.
 
+## Releasing
+
+1. Set the new version in `pyproject.toml` and `src/heartcut/__init__.py`, and move the
+   *Unreleased* entries in `CHANGELOG.md` under it.
+2. Merge to `main` and wait for CI to pass.
+3. Tag that commit and push the tag:
+   `git tag v0.2.0 && git push origin v0.2.0`.
+
+The `Release` workflow checks that the tag matches both version strings, builds the
+wheel and sdist, and publishes them to PyPI through trusted publishing.
+
 ## Adding a dataset, teacher or student
 
 - Dataset: a config in `configs/datasets/` and, if needed, a loader; see

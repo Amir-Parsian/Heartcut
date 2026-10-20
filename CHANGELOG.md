@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Release workflow: pushing a `v*` tag builds the package and publishes it to PyPI
+  through trusted publishing, after checking the tag matches the package version.
+
 ### Changed
 - Renamed the project from DistillKit to Heartcut, because the old name is already used
   by another LLM distillation toolkit. The package and CLI are now `heartcut`,

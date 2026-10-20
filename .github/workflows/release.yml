@@ -1,0 +1,48 @@
+name: Release
+
+# Publishes the wheel and sdist to PyPI when a version tag (v0.1.0, v0.2.0, ...) is pushed.
+# Uses PyPI trusted publishing (OIDC), so no API token is stored as a secret. PyPI must
+# list this repository, this workflow file (release.yml) and the `pypi` environment as a
+# trusted publisher for the `heartcut` project.
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: tag matches the package version
+        run: |
+          python3 - <<'PY'
+          import os, re, tomllib
+          tag = os.environ["GITHUB_REF_NAME"].removeprefix("v")
+          project = tomllib.load(open("pyproject.toml", "rb"))["project"]["version"]
+          package = re.search(r'__version__ = "(.+)"', open("src/heartcut/__init__.py").read())[1]
+          assert tag == project == package, f"tag {tag}, pyproject {project}, __init__ {package}"
+          print(f"releasing heartcut {tag}")
+          PY
+      - run: uv build
+      - name: check the metadata PyPI will render
+        run: uvx twine check --strict dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/heartcut/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
