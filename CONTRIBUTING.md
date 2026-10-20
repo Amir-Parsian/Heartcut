@@ -41,7 +41,8 @@ affects results, say which numbers move and attach the regenerated `results.md`.
    `git tag v0.2.0 && git push origin v0.2.0`.
 
 The `Release` workflow checks that the tag matches both version strings, builds the
-wheel and sdist, and publishes them to PyPI through trusted publishing.
+wheel and sdist, publishes them to PyPI through trusted publishing, and creates the
+GitHub release with the version's changelog section as its notes.
 
 ## Adding a dataset, teacher or student
 

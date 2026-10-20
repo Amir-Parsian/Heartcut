@@ -9,16 +9,22 @@
 #   MODEL_DIR     exported model directory to bake in (default: ./model)
 #   EXTRAS        comma-separated extras; add "teachers" to enable the fallback router
 #   PYTHON_IMAGE  base image (any Debian-based CPython 3.11+)
+#   UV_VERSION    uv release that installs the dependencies
 ARG PYTHON_IMAGE=python:3.11-slim
+# 0.13.4 or later: older uv releases trust the compromised eMudhra/emSign CA keys.
+ARG UV_VERSION=0.13.4
+
+# uv comes from its official image rather than from PyPI through the base image's pip,
+# whose vendored certifi may still trust the compromised roots.
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
 FROM ${PYTHON_IMAGE} AS builder
-ARG UV_VERSION=0.11.32
 ARG EXTRAS=serve
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PYTHON_DOWNLOADS=never \
     UV_PROJECT_ENVIRONMENT=/opt/venv
-RUN pip install --no-cache-dir "uv==${UV_VERSION}"
+COPY --from=uv /uv /uvx /bin/
 WORKDIR /src
 # Dependencies first, so code changes do not invalidate the dependency layer.
 COPY pyproject.toml uv.lock README.md LICENSE ./
