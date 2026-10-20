@@ -185,8 +185,8 @@ v0.1.0 contains the full pipeline, tests and CI. Definition of done for v1.0.0:
 - [ ] Best student within 3 accuracy points of the teacher on Banking77 test, or the
       README explains the gap (needs results)
 - [ ] Student p95 under 50 ms per request on a standard 4-core CPU (needs results)
-- [ ] Docker image builds and serves `/predict` in CI (job in place; verified locally)
-- [ ] CI green with 80%+ coverage on `src/` (94% locally; CI runs on the first pull request)
+- [x] Docker image builds and serves `/predict` in CI
+- [x] CI green with 80%+ coverage on `src/` (about 96%)
 - [ ] Live demo link, results table and Pareto chart in this README
 - [x] Adding a new dataset needs only a config and a loader, shown in a guide
 
