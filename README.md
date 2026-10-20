@@ -193,7 +193,7 @@ and their trade-offs are in [docs/design.md](docs/design.md).
 
 ## Status
 
-v0.1.0 contains the full pipeline, tests and CI. Definition of done for v1.0.0:
+v0.1.0 is on PyPI with the full pipeline, tests and CI. Definition of done for v1.0.0:
 
 - [ ] `make benchmark` reproduces every reported number from cached labels on a clean
       machine (implemented; needs the first real labeling run and published labels)
@@ -202,7 +202,10 @@ v0.1.0 contains the full pipeline, tests and CI. Definition of done for v1.0.0:
 - [ ] Student p95 under 50 ms per request on a standard 4-core CPU (needs results)
 - [x] Docker image builds and serves `/predict` in CI
 - [x] CI green with 80%+ coverage on `src/` (about 96%)
-- [ ] Live demo link, results table and Pareto chart in this README
+- [x] `pip install heartcut` from PyPI; a version tag publishes the release and its
+      GitHub release notes
+- [ ] Live demo link, results table and Pareto chart in this README (needs results and a
+      deployed Space)
 - [x] Adding a new dataset needs only a config and a loader, shown in a guide
 
 ## License and data
