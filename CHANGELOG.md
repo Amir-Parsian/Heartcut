@@ -6,26 +6,7 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-### Added
-- Release workflow: pushing a `v*` tag builds the package and publishes it to PyPI
-  through trusted publishing, after checking the tag matches the package version.
-- `pip install` instructions in the README, and a CI job that builds the package and
-  checks the installed wheel outside the repository.
-
-### Fixed
-- The wheel now ships the price table, so teacher costs are reported when Heartcut is
-  installed from PyPI rather than run from a clone. A `configs/pricing.yaml` in the
-  working directory still takes precedence.
-- The PyPI description: relative links and chart images point at the release's tag on
-  GitHub, and the Mermaid diagram (which PyPI cannot render) is replaced by a link.
-
-### Changed
-- Renamed the project from DistillKit to Heartcut, because the old name is already used
-  by another LLM distillation toolkit. The package and CLI are now `heartcut`,
-  environment variables are `HEARTCUT_*` (for example `HEARTCUT_MODEL_DIR`), the default
-  cache directory is `.cache/heartcut`, and the serving image is `heartcut-serve`.
-
-## [0.1.0] - 2026-10-19
+## [0.1.0] - 2026-10-20
 
 ### Added
 - Typed YAML configs (Pydantic) with file references and `--set` overrides;
@@ -48,8 +29,14 @@ All notable changes to this project are documented here. The format follows
 - ONNX export with dynamic int8 quantisation and parity checks; torch-free CPU runtime;
   FastAPI service with an optional fallback router; Docker image; Gradio demo.
 - Publishing and fetching teacher labels on the Hugging Face Hub.
+- Packaging for PyPI: the wheel ships the price table, so teacher costs are reported
+  outside a clone (a `configs/pricing.yaml` in the working directory takes precedence),
+  and the PyPI description is the README with its links and charts pointing at the
+  release's tag on GitHub.
 - CI: ruff, strict mypy, tests with an 80% coverage gate, Docker build and `/predict`
-  smoke test.
+  smoke test, and a check of the built wheel installed outside the repository.
+- Release workflow: pushing a `v*` tag that matches the package version publishes to PyPI
+  through trusted publishing.
 
 [Unreleased]: https://github.com/Amir-Parsian/Heartcut/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/Amir-Parsian/Heartcut/releases/tag/v0.1.0
