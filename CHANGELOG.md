@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-21
+
 ### Security
 - After the eMudhra/emSign CA key compromise: certifi 2026.10.19 in the lockfile, and
   the Docker image installs dependencies with uv 0.13.4, copied from uv's official image
@@ -59,5 +61,6 @@ All notable changes to this project are documented here. The format follows
 - Release workflow: pushing a `v*` tag that matches the package version publishes to PyPI
   through trusted publishing.
 
-[Unreleased]: https://github.com/Amir-Parsian/Heartcut/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Amir-Parsian/Heartcut/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Amir-Parsian/Heartcut/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Amir-Parsian/Heartcut/releases/tag/v0.1.0

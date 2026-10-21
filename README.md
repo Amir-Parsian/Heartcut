@@ -217,7 +217,8 @@ and their trade-offs are in [docs/design.md](docs/design.md).
 
 ## Status
 
-v0.1.0 is on PyPI with the full pipeline, tests and CI. Definition of done for v1.0.0:
+v0.2.0 is on PyPI with the full pipeline, the no-code Studio, tests and CI. Definition of
+done for v1.0.0:
 
 - [ ] `make benchmark` reproduces every reported number from cached labels on a clean
       machine (implemented; needs the first real labeling run and published labels)
