@@ -31,8 +31,11 @@ COPY pyproject.toml uv.lock README.md LICENSE ./
 RUN set -eu; args=""; for e in $(echo "$EXTRAS" | tr ',' ' '); do args="$args --extra $e"; done; \
     uv sync --frozen --no-dev --no-install-project $args
 COPY src ./src
-# The wheel build packages the price table (see force-include in pyproject.toml).
-COPY configs/pricing.yaml ./configs/
+# The wheel build packages the price table, the teacher and student configs, the prompt
+# and the studio's sample tickets (see force-include in pyproject.toml).
+COPY configs ./configs
+COPY prompts ./prompts
+COPY examples/helpdesk/tickets.jsonl ./examples/helpdesk/
 RUN set -eu; args=""; for e in $(echo "$EXTRAS" | tr ',' ' '); do args="$args --extra $e"; done; \
     uv sync --frozen --no-dev --no-editable $args
 
