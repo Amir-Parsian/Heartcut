@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Heartcut Studio</title>
+  <meta name="description" content="Train a small, cheap model from a big AI's answers, without writing code.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a78d6'/%3E%3Cpath d='M16 25s-8-4.9-8-10.6A4.4 4.4 0 0 1 16 12a4.4 4.4 0 0 1 8 2.4C24 20.1 16 25 16 25z' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/studio.css">
+  <script src="/static/studio.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#/" aria-label="Heartcut Studio home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M16 25s-8-4.9-8-10.6A4.4 4.4 0 0 1 16 12a4.4 4.4 0 0 1 8 2.4C24 20.1 16 25 16 25z"/></svg>
+      <span>Heartcut <em>Studio</em></span>
+    </a>
+    <nav class="topnav">
+      <a href="#/" class="navlink">My projects</a>
+      <a href="#/new" class="button primary small">New project</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Home ------------------------------------------------------------------------ -->
+    <section id="view-home" class="view" hidden>
+      <div class="hero">
+        <div class="hero-text">
+          <p class="eyebrow">No code. Drag and drop.</p>
+          <h1>Turn an expensive AI into a small model you own</h1>
+          <p class="lead">Drop in a spreadsheet of messages you have already sorted. A large AI
+            (the <strong>teacher</strong>) labels them, small models (the
+            <strong>students</strong>) learn from its answers, and Heartcut shows how close they
+            get, how fast they are and what they cost. Then download the winner.</p>
+          <a class="button primary large" href="#/new">Start a new project</a>
+        </div>
+        <ol class="how">
+          <li><span>1</span><div><strong>Drop your spreadsheet</strong>CSV, Excel or JSON lines</div></li>
+          <li><span>2</span><div><strong>Drag columns into place</strong>Which is the message, which the category</div></li>
+          <li><span>3</span><div><strong>Pick a teacher and students</strong>Start with a free practice run</div></li>
+          <li><span>4</span><div><strong>Compare and download</strong>Accuracy, speed and cost side by side</div></li>
+        </ol>
+      </div>
+      <div id="busy-banner" class="callout info" hidden></div>
+      <div class="section-head">
+        <h2>Your projects</h2>
+      </div>
+      <div id="project-list" class="project-grid"></div>
+      <p id="workspace-note" class="footnote"></p>
+    </section>
+
+    <!-- New project wizard ----------------------------------------------------------- -->
+    <section id="view-new" class="view" hidden>
+      <ol class="stepper" id="stepper" aria-label="Steps">
+        <li data-step="0"><button type="button"><span>1</span>Data</button></li>
+        <li data-step="1"><button type="button"><span>2</span>Columns</button></li>
+        <li data-step="2"><button type="button"><span>3</span>Teacher</button></li>
+        <li data-step="3"><button type="button"><span>4</span>Students</button></li>
+        <li data-step="4"><button type="button"><span>5</span>Review</button></li>
+      </ol>
+
+      <div class="panel step" data-step="0">
+        <h2>Add the examples you have already sorted</h2>
+        <p class="muted">A spreadsheet with one row per message and a column that says which
+          category it belongs to, such as support emails and the team that handled them.</p>
+        <label class="dropzone" id="data-drop" tabindex="0">
+          <input type="file" id="data-file" hidden
+                 accept=".csv,.tsv,.tab,.txt,.jsonl,.ndjson,.json,.xlsx,.xlsm">
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 31V11m0 0-8 8m8-8 8 8"/><path d="M8 29v6a5 5 0 0 0 5 5h22a5 5 0 0 0 5-5v-6"/></svg>
+          <strong>Drag and drop your spreadsheet here</strong>
+          <span>or <u>click to choose a file</u></span>
+          <small>CSV, Excel (.xlsx), TSV or JSON lines, up to 50 MB</small>
+        </label>
+        <p class="or-row">No data at hand?
+          <button type="button" class="linkish" id="use-sample">Try it with 120 sample IT-helpdesk tickets</button>
+        </p>
+        <div id="upload-summary"></div>
+      </div>
+
+      <div class="panel step" data-step="1">
+        <h2>Show Heartcut which column is which</h2>
+        <p class="muted">Drag each column card to where it belongs; we made a first guess.
+          No mouse? Click a card and choose where it goes.</p>
+        <div class="columns-layout">
+          <div class="zone palette" data-zone="palette">
+            <h3 class="mini">Your columns</h3>
+            <div id="column-palette" class="chips"></div>
+            <p class="zone-empty">Every column is in use. Drag one back here to leave it out.</p>
+          </div>
+          <div class="targets">
+            <div class="zone target" data-zone="text">
+              <div class="target-head">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                <div><strong>Message</strong><span>What the model reads. Drop one or more
+                  columns; they are joined together.</span></div>
+              </div>
+              <div id="slot-text" class="chips slot"></div>
+              <p class="zone-empty">Drop the message column here</p>
+            </div>
+            <div class="zone target" data-zone="label">
+              <div class="target-head">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8" r="1.5"/></svg>
+                <div><strong>Category</strong><span>The answer it should learn to give. One
+                  column.</span></div>
+              </div>
+              <div id="slot-label" class="chips slot"></div>
+              <p class="zone-empty">Drop the category column here</p>
+            </div>
+          </div>
+        </div>
+        <div id="profile" class="profile" aria-live="polite"></div>
+        <div class="field-row">
+          <label class="field">
+            <span>Project name</span>
+            <input id="project-name" maxlength="80" autocomplete="off">
+          </label>
+          <label class="field grow">
+            <span>In a few words, what is the sorting for?</span>
+            <input id="task" maxlength="300" autocomplete="off"
+                   placeholder="e.g. sorting customer emails to the right team">
+            <small>The teacher reads this before every message, so be specific.</small>
+          </label>
+        </div>
+      </div>
+
+      <div class="panel step" data-step="2">
+        <h2>Choose the teacher</h2>
+        <p class="muted">The teacher is a large AI model. It labels your messages once and the
+          students learn from its answers. Your own categories are kept aside to grade everyone
+          fairly at the end.</p>
+        <div id="teacher-cards" class="card-grid" role="radiogroup" aria-label="Teacher"></div>
+        <div id="teacher-options"></div>
+      </div>
+
+      <div class="panel step" data-step="3">
+        <h2>Pick the students to compare</h2>
+        <p class="muted">Drag models into your line-up (or use their buttons). Heartcut trains
+          each one on the teacher's answers and tells you which is best.</p>
+        <div class="models-layout">
+          <div class="zone shelf" data-zone="shelf">
+            <h3 class="mini">Available</h3>
+            <div id="model-shelf" class="model-list"></div>
+            <p class="zone-empty">All models are in your line-up.</p>
+          </div>
+          <div class="zone lineup" data-zone="lineup">
+            <h3 class="mini">Your line-up</h3>
+            <div id="model-lineup" class="model-list"></div>
+            <p class="zone-empty">Drop at least one model here</p>
+          </div>
+        </div>
+        <fieldset class="segmented">
+          <legend>How thorough?</legend>
+          <label>
+            <input type="radio" name="thorough" value="quick" checked>
+            <span><strong>Quick</strong>One training run per student.</span>
+          </label>
+          <label>
+            <input type="radio" name="thorough" value="thorough">
+            <span><strong>Thorough</strong>Three runs per student, plus a chart of how accuracy
+              grows with more examples. Takes longer.</span>
+          </label>
+        </fieldset>
+      </div>
+
+      <div class="panel step" data-step="4">
+        <h2>Ready to train</h2>
+        <div id="review"></div>
+      </div>
+
+      <div class="wizard-nav">
+        <button type="button" class="button ghost" id="back">Back</button>
+        <p id="step-error" class="error-text" role="alert"></p>
+        <button type="button" class="button primary" id="next">Next</button>
+      </div>
+    </section>
+
+    <!-- Project ---------------------------------------------------------------------- -->
+    <section id="view-project" class="view" hidden>
+      <div id="project-body"></div>
+    </section>
+  </main>
+
+  <div id="chip-menu" class="chip-menu" role="menu" hidden></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

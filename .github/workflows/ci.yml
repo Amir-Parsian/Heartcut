@@ -74,6 +74,7 @@ jobs:
           cd /tmp
           /tmp/wheel-env/bin/heartcut --version
           /tmp/wheel-env/bin/python -c "from heartcut.config import load_pricing_table; assert load_pricing_table()"
+          /tmp/wheel-env/bin/python -c "from heartcut.studio import catalog; [c.load() for c in (*catalog.TEACHERS, *catalog.STUDENTS)]; catalog.resource(catalog.SAMPLE_DATA)"
 
   docker:
     needs: test

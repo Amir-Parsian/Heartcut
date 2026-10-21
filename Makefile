@@ -3,7 +3,7 @@ EXPERIMENT ?= configs/experiments/banking77.yaml
 RUN = uv run
 
 .PHONY: help install lint format typecheck test test-fast data label label-dry-run audit train \
-        labels-pull benchmark report export serve docker demo smoke clean
+        labels-pull benchmark report export serve docker demo studio smoke clean
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -64,6 +64,9 @@ docker:  ## Build the CPU serving image (MODEL=<export dir>)
 
 demo:  ## Gradio demo (MODEL=<export dir>)
 	HEARTCUT_MODEL_DIR=$(MODEL) $(RUN) python demo/app.py
+
+studio:  ## No-code, drag-and-drop web app for the whole pipeline
+	$(RUN) heartcut studio
 
 smoke:  ## Whole pipeline on a small Banking77 slice with the simulated teacher (free)
 	$(RUN) heartcut run -c $(EXPERIMENT) \

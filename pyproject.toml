@@ -62,7 +62,13 @@ serve = [
 ]
 tracking = ["mlflow>=2.14"]
 demo = ["gradio>=4.40"]
-all = ["heartcut[pipeline,teachers,students,export,serve,tracking,demo]"]
+# The no-code web app (`heartcut studio`). Add `teachers` for real teacher LLMs and
+# `students,export` for the neural students.
+studio = [
+    "heartcut[pipeline,serve]",
+    "openpyxl>=3.1",
+]
+all = ["heartcut[pipeline,teachers,students,export,serve,tracking,demo,studio]"]
 
 [project.urls]
 Homepage = "https://github.com/Amir-Parsian/Heartcut"
@@ -94,6 +100,12 @@ packages = ["src/heartcut"]
 [tool.hatch.build.targets.wheel.force-include]
 # Installed users have no configs/ directory; config.py falls back to this copy.
 "configs/pricing.yaml" = "heartcut/pricing.yaml"
+# The studio offers these teachers, students and sample data; heartcut.studio.catalog
+# reads them from the repository or, when installed, from these copies.
+"configs/teachers" = "heartcut/configs/teachers"
+"configs/students" = "heartcut/configs/students"
+"prompts" = "heartcut/prompts"
+"examples/helpdesk/tickets.jsonl" = "heartcut/examples/helpdesk/tickets.jsonl"
 
 # PyPI does not resolve relative links or render Mermaid, so the PyPI description points
 # relative links at the release's tag on GitHub (raw files for images, including the
@@ -165,6 +177,7 @@ module = [
     "mlflow.*",
     "gradio.*",
     "matplotlib.*",
+    "openpyxl.*",
     "joblib.*",
     "pyarrow.*",
 ]
