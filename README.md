@@ -27,6 +27,20 @@ show a number the benchmark did not produce. Simulated-teacher runs are refused.
 
 <!-- results:end -->
 
+## No code? Use Heartcut Studio
+
+```bash
+pip install "heartcut[studio,teachers]"
+heartcut studio            # opens http://127.0.0.1:8765 in your browser
+```
+
+Heartcut Studio is the same pipeline as a drag-and-drop web app that runs on your
+computer. Drop in a spreadsheet (CSV, Excel or JSON lines) and drag its columns onto
+*message* and *category*. Then pick a teacher (a free practice run, Claude or a local
+model) and drag the students you want to compare into a line-up. It labels, trains and
+benchmarks with a progress view. When it finishes you can try the winner, use it to sort
+a whole spreadsheet, or download it. See the [Studio guide](docs/studio.md).
+
 ## How it works
 
 ```mermaid
@@ -72,7 +86,8 @@ pip install "heartcut[all]"     # every stage, including PyTorch for the neural 
 pip install "heartcut[serve]"   # only serve an exported student: ONNX Runtime, no PyTorch
 ```
 
-The extras (`pipeline`, `teachers`, `students`, `export`, `serve`, `tracking`, `demo`)
+The extras (`pipeline`, `teachers`, `students`, `export`, `serve`, `tracking`, `demo`,
+`studio`)
 can be combined; [pyproject.toml](pyproject.toml) lists what each one installs. The
 ready-made experiment configs and prompts live in this repository, so the quickstart
 below runs from a clone.
@@ -178,6 +193,7 @@ src/heartcut/
 ├── students/    TF-IDF, SetFit-style, encoder fine-tune, training stage
 ├── eval/        metrics, label audit, cost model, latency bench, charts, report
 ├── serve/       ONNX export, CPU runtime, FastAPI app, fallback router
+├── studio/      no-code web app: uploads, projects, background runs, single-page UI
 └── cli.py       Typer CLI, one command per stage
 configs/         datasets, teachers, students, experiments, published prices
 prompts/         prompt templates

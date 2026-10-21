@@ -6,6 +6,7 @@
 .pytest_cache
 **/__pycache__
 mlruns
+heartcut-studio
 results
 docs
 demo

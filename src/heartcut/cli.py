@@ -11,6 +11,7 @@ versioned outputs, so stages can be re-run independently::
     heartcut benchmark -c configs/experiments/banking77.yaml
     heartcut export    -c configs/experiments/banking77.yaml
     heartcut serve     --model artifacts/banking77/export/<student>-<fp>
+    heartcut studio    # the same pipeline as a no-code, drag-and-drop web app
 
 Any config value can be overridden with ``--set key.path=value`` (repeatable), e.g.
 ``--set dataset.max_examples.train=200`` for a cheap development slice.
@@ -316,6 +317,44 @@ def serve(
     if teacher_config is not None:
         os.environ["HEARTCUT_TEACHER_CONFIG"] = str(teacher_config)
     uvicorn.run("heartcut.serve.app:app_from_env", factory=True, host=host, port=port)
+
+
+@app.command()
+def studio(
+    workspace: Annotated[
+        Path, typer.Option(help="Folder for your uploads, projects and models.")
+    ] = Path("heartcut-studio"),
+    host: Annotated[
+        str, typer.Option(help="Address to listen on. 0.0.0.0 shares the studio on your network.")
+    ] = "127.0.0.1",
+    port: int = 8765,
+    browser: Annotated[bool, typer.Option(help="Open the studio in your web browser.")] = True,
+    verbose: VerboseOpt = False,
+) -> None:
+    """Open Heartcut Studio: the whole pipeline as a no-code, drag-and-drop web app."""
+    import threading
+    import webbrowser
+
+    import uvicorn
+
+    from heartcut.studio.app import LOOPBACK_HOSTS, create_app
+
+    _setup_logging(verbose)
+    shared = host not in LOOPBACK_HOSTS
+    hosts = (["*"] if host in ("0.0.0.0", "::") else [host, *LOOPBACK_HOSTS]) if shared else None
+    application = create_app(workspace, allowed_hosts=hosts)
+    url = f"http://{'127.0.0.1' if host in ('0.0.0.0', '::') else host}:{port}"
+    typer.echo(f"Heartcut Studio is running at {url}  (press Ctrl+C to quit)")
+    typer.echo(f"Your projects are saved in {workspace.resolve()}")
+    if shared:
+        typer.echo(
+            "Warning: anyone who can reach this address can use the studio, including any "
+            "API key pasted into it. There is no login.",
+            err=True,
+        )
+    if browser:
+        threading.Timer(1.0, webbrowser.open, args=(url,)).start()
+    uvicorn.run(application, host=host, port=port, log_level="warning")
 
 
 @app.command()

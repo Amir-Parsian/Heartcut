@@ -12,6 +12,14 @@ All notable changes to this project are documented here. The format follows
   instead of installed with the base image's pip.
 
 ### Added
+- Heartcut Studio (`heartcut studio`, extra `studio`): the whole pipeline as a no-code,
+  drag-and-drop web app. Drop a CSV, Excel or JSON-lines file, drag columns onto message
+  and category, pick a teacher and drag students into a line-up. It then labels, trains
+  and benchmarks with live progress, stop and resume. The results page shows the
+  benchmark in plain words, a try-it box, spreadsheet labeling and a model download.
+  Each project is an ordinary experiment config. Guide: `docs/studio.md`.
+- The wheel ships the teacher and student configs, the prompt and the sample helpdesk
+  tickets, so the studio works from a plain `pip install`.
 - The Release workflow also creates the GitHub release, with the version's changelog
   section as its notes. README badge for the PyPI version.
 
