@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import logging
+from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -36,12 +37,14 @@ from heartcut.eval.audit import filter_by_confidence
 from heartcut.eval.metrics import score
 from heartcut.students.base import AnyStudentConfig, Student, TrainingData, set_seed
 from heartcut.students.registry import build_student
+from heartcut.teachers.base import NoUsableLabels
 from heartcut.teachers.labeling import (
     COST,
     TEACHER_LABEL,
     VOTES,
     labels_stage,
     load_teacher_labels,
+    read_calls,
     soft_label_matrix,
 )
 from heartcut.tracking import flatten, start_run
@@ -51,6 +54,8 @@ logger = logging.getLogger(__name__)
 MODEL_DIR = "model"
 METRICS_FILE = "metrics.json"
 PREDICTIONS_FILE = "test_predictions.parquet"
+# Stop reasons of an answer cut off by max_output_tokens (Anthropic, OpenAI-compatible).
+CUT_OFF = ("max_tokens", "length")
 
 
 def budget_tag(budget: Budget) -> str:
@@ -103,7 +108,7 @@ def prepare_training(
     labeling_cost = None if costs.isna().any() else float(costs.sum())
     kept, dropped = filter_by_confidence(pool, cfg.label_filter.min_confidence)
     if kept.empty:
-        raise ValueError(f"no usable teacher labels for budget {budget}")
+        raise NoUsableLabels(f"no usable teacher labels for budget {budget}")
     val = teacher_validation.loc[teacher_validation[TEACHER_LABEL].notna()]
     soft = None
     if student.use_soft_labels:
@@ -233,6 +238,32 @@ def train_one(
     return record
 
 
+def no_validation_labels(n_messages: int, calls: Sequence[dict[str, Any]]) -> NoUsableLabels:
+    """Students are scored against the teacher's validation labels; say why there are none.
+
+    The teacher's most common problem with those messages (from its call records) is
+    included, since that is what the person has to fix.
+    """
+    if n_messages == 0:
+        return NoUsableLabels(
+            "the validation split is empty, so students cannot be checked against the teacher"
+        )
+    message = (
+        f"the teacher gave no usable answer for any of the {n_messages:,} validation "
+        "messages, so students cannot be checked against it"
+    )
+    problems = Counter(
+        str(c["error"]) + (" (cut off by max_output_tokens)" if c["stop_reason"] in CUT_OFF else "")
+        for c in calls
+        if c["split"] == "validation" and c["label"] is None
+    )
+    if problems:
+        problem, count = problems.most_common(1)[0]
+        total = problems.total()
+        message += f"; most common problem ({count:,} of {total:,} unusable answers): {problem}"
+    return NoUsableLabels(message)
+
+
 def run_training(
     cfg: ExperimentConfig,
     *,
@@ -242,9 +273,12 @@ def run_training(
     force: bool = False,
 ) -> list[dict[str, Any]]:
     data = load_prepared(cfg)
-    labels_fp = labels_stage(cfg, data.fingerprint).fingerprint
+    labels = labels_stage(cfg, data.fingerprint)
+    labels_fp = labels.fingerprint
     teacher_train = load_teacher_labels(cfg, "train")
     teacher_validation = load_teacher_labels(cfg, "validation")
+    if teacher_validation[TEACHER_LABEL].isna().all():
+        raise no_validation_labels(len(teacher_validation), read_calls(labels.path))
     chosen = [cfg.student(n) for n in students] if students else list(cfg.students)
     results = []
     for student_cfg in chosen:

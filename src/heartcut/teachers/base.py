@@ -53,6 +53,10 @@ class FatalTeacherError(TeacherError):
     """Permanent failure (bad request, auth, unknown model): retrying will not help."""
 
 
+class NoUsableLabels(ValueError):
+    """The teacher's answers leave nothing to train on, or nothing to check students with."""
+
+
 def parse_retry_after(headers: Any) -> float | None:
     """Seconds from a ``retry-after`` header, if present and numeric."""
     if headers is None:

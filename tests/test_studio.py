@@ -28,7 +28,7 @@ from heartcut.studio.tables import (
     profile,
     read_table,
 )
-from heartcut.teachers.base import FatalTeacherError
+from heartcut.teachers.base import FatalTeacherError, NoUsableLabels
 from heartcut.teachers.runner import BudgetExceeded
 
 OCTET = {"content-type": "application/octet-stream"}
@@ -279,6 +279,9 @@ def test_failures_are_explained(tmp_path: Path) -> None:
     assert explain(FatalTeacherError("400: bad request"), paid)["code"] == "teacher"
     assert explain(ModuleNotFoundError("No module named 'torch'"), paid)["code"] == "install"
     assert explain(ConnectionError("Connection error."), local)["code"] == "local"
+    unusable = explain(NoUsableLabels("the teacher gave no usable answer for any of 12"), paid)
+    assert unusable["code"] == "labels"
+    assert unusable["detail"].startswith("The teacher gave no usable answer for any of 12. ")
     assert explain(ValueError("boom"), paid) == {
         "code": "error",
         "title": "Something went wrong",

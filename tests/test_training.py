@@ -14,6 +14,7 @@ from heartcut.students.training import (
     select_budget,
     student_run_dir,
 )
+from heartcut.teachers.base import NoUsableLabels
 from heartcut.teachers.labeling import load_teacher_labels, run_labeling
 
 
@@ -79,6 +80,23 @@ def test_soft_labels_fall_back_with_single_sample(make_experiment) -> None:  # t
     students = [{"name": "soft", "kind": "tfidf", "use_soft_labels": True}]
     cfg = _ready(make_experiment(students=students).model_copy(update={"teacher": teacher}))
     assert not run_training(cfg, budgets=["full"], seeds=[0])[0]["soft_labels"]
+
+
+def test_a_teacher_without_usable_validation_answers_is_explained(make_experiment) -> None:  # type: ignore[no-untyped-def]
+    base = make_experiment()
+    assert base.teacher.simulated is not None
+    simulated = base.teacher.simulated.model_copy(update={"invalid_rate": 1.0})
+    teacher = base.teacher.model_copy(update={"simulated": simulated, "self_consistency": 1})
+    cfg = _ready(base.model_copy(update={"teacher": teacher}))
+    n_validation = len(load_teacher_labels(cfg, "validation"))
+    with pytest.raises(NoUsableLabels) as caught:
+        run_training(cfg)
+    assert str(caught.value) == (
+        f"the teacher gave no usable answer for any of the {n_validation} validation messages, "
+        f"so students cannot be checked against it; most common problem ({n_validation} of "
+        f"{n_validation} unusable answers): not a known label: "
+        '"I\'m not sure which intent this is."'
+    )
 
 
 def test_budgets_are_nested(make_experiment) -> None:  # type: ignore[no-untyped-def]

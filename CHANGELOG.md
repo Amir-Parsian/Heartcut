@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- Training no longer crashes with "Found array with 0 sample(s) ... TfidfTransformer"
+  when the teacher gave no usable answer for any validation message. It stops before
+  training with an error that names the teacher's most common bad answer, and the studio
+  explains it as "The teacher's answers could not be used".
+
 ## [0.2.0] - 2026-10-21
 
 ### Security

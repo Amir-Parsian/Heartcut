@@ -23,7 +23,7 @@ from heartcut.config import ExperimentConfig
 from heartcut.studio import catalog
 from heartcut.studio.catalog import student_title
 from heartcut.studio.projects import STARTABLE, Project, Workspace
-from heartcut.teachers.base import FatalTeacherError
+from heartcut.teachers.base import FatalTeacherError, NoUsableLabels
 from heartcut.teachers.runner import BudgetExceeded
 
 logger = logging.getLogger(__name__)
@@ -142,6 +142,16 @@ def explain(exc: BaseException, project: Project) -> dict[str, str]:
                 "detail": f"The teacher's provider said: {message}. Paste a valid key and resume.",
             }
         return {"code": "teacher", "title": "The teacher refused the request", "detail": message}
+    if isinstance(exc, NoUsableLabels):
+        message = str(exc)
+        return {
+            "code": "labels",
+            "title": "The teacher's answers could not be used",
+            "detail": (
+                f"{message[:1].upper()}{message[1:]}. Resuming would reuse the same answers, "
+                "so start a new project with a different teacher."
+            ),
+        }
     if isinstance(exc, ImportError):
         return {
             "code": "install",
