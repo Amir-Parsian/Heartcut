@@ -1,6 +1,6 @@
 [project]
 name = "heartcut"
-version = "0.1.0"
+version = "0.2.0"
 description = "Distill an expensive LLM classifier into a tiny model: label with a teacher LLM, train compact students, benchmark cost/accuracy/latency, serve on CPU."
 # The PyPI description is README.md rewritten for PyPI; see fancy-pypi-readme below.
 dynamic = ["readme"]
