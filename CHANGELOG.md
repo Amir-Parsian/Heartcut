@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-22
+
+### Added
+- README badge for PyPI downloads.
+
+### Fixed
+- A `--set` override can edit a file swapped in by an earlier one, e.g.
+  `--set teacher=configs/teachers/claude-sonnet-5-5.yaml --set teacher.max_budget_usd=19`,
+  or `students=[...]` followed by `students.<name>.params.<key>=<value>`. The second
+  override used to fail with "... is not a container".
+
 ## [0.2.0] - 2026-10-21
 
 ### Security
@@ -61,6 +72,7 @@ All notable changes to this project are documented here. The format follows
 - Release workflow: pushing a `v*` tag that matches the package version publishes to PyPI
   through trusted publishing.
 
-[Unreleased]: https://github.com/Amir-Parsian/Heartcut/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Amir-Parsian/Heartcut/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/Amir-Parsian/Heartcut/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/Amir-Parsian/Heartcut/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Amir-Parsian/Heartcut/releases/tag/v0.1.0
