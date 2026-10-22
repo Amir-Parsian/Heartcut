@@ -6,6 +6,9 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- The Hugging Face Spaces demo pins `heartcut` 0.2.1 instead of `>=0.1.0`.
+
 ## [0.2.1] - 2026-10-22
 
 ### Added

@@ -1,5 +1,5 @@
 # Hugging Face Spaces installs these; the demo needs the serving runtime and, for the
 # teacher column, the teacher SDKs.
-heartcut[serve,teachers]>=0.1.0
+heartcut[serve,teachers]==0.2.1
 gradio>=4.40
 huggingface-hub>=0.24
