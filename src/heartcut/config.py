@@ -323,11 +323,17 @@ def _load_reference(value: Any, base_dir: Path) -> Any:
     return value
 
 
-def apply_overrides(data: dict[str, Any], overrides: Iterable[str]) -> dict[str, Any]:
+def apply_overrides(
+    data: dict[str, Any], overrides: Iterable[str], *, base_dir: Path | None = None
+) -> dict[str, Any]:
     """Apply ``dotted.key=value`` overrides; values are parsed as YAML scalars/collections.
 
     List items can be addressed by index or, for lists of named mappings such as
     ``students``, by name: ``students.tfidf-logreg.params.C=3``.
+
+    With ``base_dir``, a file reference under ``dataset``, ``teacher`` or ``students``
+    (e.g. one swapped in by an earlier override) is inlined, resolved against
+    ``base_dir``, before an override descends into it.
     """
     data = copy.deepcopy(data)
     for item in overrides:
@@ -349,6 +355,8 @@ def apply_overrides(data: dict[str, Any], overrides: Iterable[str]) -> dict[str,
                 if last:
                     node[part] = value
                 else:
+                    if i == 0 and base_dir is not None and part in _REFERENCE_KEYS:
+                        _inline_reference(node, part, base_dir)
                     node = node.setdefault(part, {})
             else:
                 raise ValueError(f"cannot apply override {item!r}: {part!r} is not a container")
@@ -364,14 +372,19 @@ def _list_index(node: list[Any], part: str) -> int:
     raise KeyError(f"no list element named {part!r}")
 
 
+def _inline_reference(data: dict[str, Any], key: str, base: Path) -> None:
+    if key not in data:
+        return
+    if key == "students":
+        if isinstance(data[key], list):
+            data[key] = [_load_reference(v, base) for v in data[key]]
+    else:
+        data[key] = _load_reference(data[key], base)
+
+
 def _inline_references(data: dict[str, Any], base: Path) -> dict[str, Any]:
     for key in _REFERENCE_KEYS:
-        if key not in data:
-            continue
-        if key == "students":
-            data[key] = [_load_reference(v, base) for v in data[key]]
-        else:
-            data[key] = _load_reference(data[key], base)
+        _inline_reference(data, key, base)
     return data
 
 
@@ -385,10 +398,11 @@ def load_experiment(path: str | Path, overrides: Iterable[str] = ()) -> Experime
     """Load an experiment config, apply overrides and validate it.
 
     An override may also swap a whole referenced file, e.g.
-    ``teacher=configs/teachers/simulated.yaml``.
+    ``teacher=configs/teachers/simulated.yaml``; later overrides such as
+    ``teacher.max_budget_usd=5`` then edit the swapped-in file's values.
     """
     path = Path(path)
-    data = apply_overrides(load_experiment_dict(path), overrides)
+    data = apply_overrides(load_experiment_dict(path), overrides, base_dir=path.parent)
     data = _inline_references(data, path.parent)
     return ExperimentConfig.model_validate(data)
 

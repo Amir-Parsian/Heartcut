@@ -15,7 +15,7 @@ from heartcut.config import (
     load_pricing_table,
     load_teacher,
 )
-from tests.conftest import REPO
+from tests.conftest import PROMPT, REPO
 
 EXPERIMENTS = sorted((REPO / "configs" / "experiments").glob("*.yaml"))
 TEACHERS = sorted((REPO / "configs" / "teachers").glob("*.yaml"))
@@ -60,6 +60,41 @@ def test_override_can_swap_a_referenced_file() -> None:
         ["teacher=configs/teachers/simulated.yaml"],
     )
     assert cfg.teacher.backend == "simulated"
+
+
+def test_override_can_edit_a_swapped_in_teacher() -> None:
+    cfg = load_experiment(
+        REPO / "configs/experiments/banking77.yaml",
+        ["teacher=configs/teachers/claude-sonnet-5-5.yaml", "teacher.max_budget_usd=19"],
+    )
+    assert cfg.teacher.model == "claude-sonnet-5-5"
+    assert cfg.teacher.max_budget_usd == 19
+    # The prompt path still resolves relative to the swapped-in teacher file.
+    assert Path(cfg.teacher.prompt).resolve() == PROMPT.resolve()
+
+
+def test_override_can_edit_a_swapped_in_student_by_name() -> None:
+    cfg = load_experiment(
+        REPO / "configs/experiments/banking77.yaml",
+        [
+            "students=[configs/students/tfidf-logreg.yaml,"
+            " configs/students/encoder-modernbert.yaml]",
+            "students.encoder-modernbert.params.epochs=1",
+        ],
+    )
+    assert [s.name for s in cfg.students] == ["tfidf-logreg", "encoder-modernbert"]
+    params = cfg.student("encoder-modernbert").params
+    assert params.epochs == 1  # type: ignore[union-attr]
+    assert params.model_name == "answerdotai/ModernBERT-base"  # type: ignore[union-attr]
+
+
+def test_a_later_file_swap_replaces_earlier_field_overrides() -> None:
+    cfg = load_experiment(
+        REPO / "configs/experiments/banking77.yaml",
+        ["teacher.max_budget_usd=19", "teacher=configs/teachers/claude-sonnet-5-5.yaml"],
+    )
+    assert cfg.teacher.model == "claude-sonnet-5-5"
+    assert cfg.teacher.max_budget_usd == 50
 
 
 def test_override_syntax_errors() -> None:

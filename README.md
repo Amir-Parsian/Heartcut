@@ -123,6 +123,10 @@ uv run heartcut label -c configs/experiments/banking77.yaml \
     --set dataset.max_examples.train=200
 ```
 
+A later `--set` can edit a file swapped in by an earlier one, e.g.
+`--set teacher=configs/teachers/claude-sonnet-5-5.yaml --set teacher.max_budget_usd=19`;
+a swap that comes after a field override replaces it.
+
 ## What is compared
 
 | Tier | Model | Size | Notes |
