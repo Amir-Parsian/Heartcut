@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/Amir-Parsian/Heartcut/actions/workflows/ci.yml/badge.svg)](https://github.com/Amir-Parsian/Heartcut/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/heartcut)](https://pypi.org/project/heartcut/)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/heartcut?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/heartcut)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 
