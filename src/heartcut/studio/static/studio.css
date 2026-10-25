@@ -216,6 +216,11 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); box-sh
 .dropzone.compact { padding: 1.5rem 1rem; }
 .dropzone.compact svg { width: 36px; height: 36px; }
 .or-row { text-align: center; color: var(--muted); margin: 1rem 0 0; }
+.hub-box { margin-top: 1.25rem; padding: .9rem 1.1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.hub-box > summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+.hub-box > p { margin: .75rem 0 0; }
+.hub-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
+.hub-actions .muted { font-size: .9rem; }
 
 .file-card { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.25rem; margin-top: 1.5rem; padding: .9rem 1rem; border-radius: var(--radius-sm); background: var(--good-soft); border: 1px solid color-mix(in srgb, var(--good) 30%, transparent); }
 .file-card svg { width: 28px; height: 28px; fill: none; stroke: var(--good); stroke-width: 2; flex: none; }

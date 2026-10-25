@@ -32,7 +32,7 @@ From a clone of this repository you can run `make studio` instead.
 1. **Data.** Drag a spreadsheet onto the drop zone, or click it to pick a file. CSV,
    Excel (`.xlsx`), TSV and JSON lines files work, up to 50 MB. Each row is one message,
    and one column says which category the message belongs to. No data yet? Use the 120
-   sample IT-helpdesk tickets.
+   sample IT-helpdesk tickets, or fetch a free dataset from the Hugging Face Hub (below).
 2. **Columns.** The Studio guesses which column holds the message and which holds the
    category. Drag column cards onto **Message** and **Category** to change its guess, or
    click a card to choose from a menu. If you drop several columns on Message, such as a
@@ -58,6 +58,42 @@ From a clone of this repository you can run `make studio` instead.
    draws a learning curve. It takes longer than **Quick**.
 5. **Review.** Check the summary and the estimated teacher cost, then press **Start
    training**.
+
+## Data from the Hugging Face Hub
+
+Instead of a file, you can fetch any text-classification dataset from
+[huggingface.co/datasets](https://huggingface.co/datasets). On the Data step, open
+**Or fetch a free dataset from the Hugging Face Hub** and type the dataset's name as it
+appears on its page, for example `dair-ai/emotion` or `fancyzhx/ag_news`. Pasting the
+page's address works too.
+
+- **Subset**: only for datasets that come in several versions (the Hub calls them
+  configs). Leave it empty for the default.
+- **Split**: leave it empty to take every split together. Heartcut makes its own
+  learning and exam split either way, so the Hub's splits only decide which rows come in.
+  Rows without a category, such as an `unsupervised` split, are skipped.
+- **Most rows**: datasets bigger than this are cut down to a random sample (always the
+  same one for the same choices). The default is 10,000 and the most is 200,000.
+
+Category ids are turned into their names, so you see `joy` rather than `1`. Columns
+holding lists, images or audio are left out. You choose the message and category
+columns in the next step, as for a spreadsheet. The project remembers where the data came
+from, and the dataset is downloaded once into the usual Hugging Face cache (`HF_HOME`).
+
+What it needs:
+
+- The `datasets` package, which the `studio` extra installs.
+- Internet access to huggingface.co. Behind a proxy, set `HTTPS_PROXY`. For a mirror,
+  set `HF_ENDPOINT`. With `HF_HUB_OFFLINE=1` only datasets already in the cache load.
+- Public datasets need no account. For a gated or private dataset, accept its terms on
+  the Hub, then give the Studio a read token. You can set `HF_TOKEN`, run
+  `huggingface-cli login` once, or paste the token into the form. A pasted token is kept
+  in memory only, like an API key.
+
+Some older datasets are published only as a loading script, which current versions of
+`datasets` no longer run. Heartcut then tries the Hub's automatic Parquet copy of the
+dataset. If there is none, it says so. Look for another copy of the same data on the
+Hub, or download it as a CSV file and drop that instead.
 
 ## While it trains
 

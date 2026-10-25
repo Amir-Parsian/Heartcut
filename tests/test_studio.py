@@ -17,7 +17,7 @@ from typer.testing import CliRunner
 
 from heartcut.cli import app as cli
 from heartcut.config import ExperimentConfig
-from heartcut.studio import catalog
+from heartcut.studio import catalog, hub
 from heartcut.studio.app import create_app
 from heartcut.studio.projects import Settings, Workspace, learning_budgets
 from heartcut.studio.runner import Busy, Runner, explain, progress_note, recover
@@ -305,6 +305,114 @@ def test_runner_stops_between_stages_and_recovers(tmp_path: Path) -> None:
     assert project.state()["error"]["code"] == "interrupted"
 
 
+# --------------------------------------------------------------------------- Hugging Face
+
+
+@pytest.fixture
+def fake_hub(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
+    """``datasets.load_dataset`` answering with the sample tickets as a two-split dataset."""
+    datasets = pytest.importorskip("datasets")
+    raw = pd.read_json(catalog.resource(catalog.SAMPLE_DATA), lines=True)
+    queues = sorted(raw["queue"].unique())
+    features = datasets.Features(
+        {
+            "subject": datasets.Value("string"),
+            "body": datasets.Value("string"),
+            "queue": datasets.ClassLabel(names=queues),
+            "tags": datasets.Sequence(datasets.Value("string")),
+        }
+    )
+
+    def part(rows: pd.DataFrame, labels: list[int] | None = None) -> Any:
+        columns = {
+            "subject": rows["subject"].tolist(),
+            "body": rows["body"].tolist(),
+            "queue": labels or [queues.index(q) for q in rows["queue"]],
+            "tags": [["x"]] * len(rows),
+        }
+        return datasets.Dataset.from_dict(columns, features=features)
+
+    unlabeled = [-1] * 10  # how many datasets mark rows without a label
+    hub_data = datasets.DatasetDict(
+        {"train": part(raw), "unsupervised": part(raw.head(10), unlabeled)}
+    )
+    calls: list[dict[str, Any]] = []
+
+    def load_dataset(path: str, name: str | None = None, **kwargs: Any) -> Any:
+        calls.append({"path": path, "name": name, **kwargs})
+        if path == "owner/missing":
+            raise datasets.exceptions.DatasetNotFoundError(f"Dataset '{path}' doesn't exist")
+        if path == "owner/scripted" and kwargs["revision"] != hub.PARQUET_BRANCH:
+            raise RuntimeError("Dataset scripts are no longer supported, but found scripted.py")
+        split = kwargs.get("split")
+        return hub_data[split] if split else hub_data
+
+    monkeypatch.setattr(datasets, "load_dataset", load_dataset)
+    return calls
+
+
+def test_hub_datasets_become_tables(fake_hub: list[dict[str, Any]]) -> None:
+    frame, source = hub.fetch_table("https://huggingface.co/datasets/owner/tickets/")
+    assert list(frame.columns) == ["subject", "body", "queue"]  # the list column is left out
+    assert len(frame) == 130 and frame["queue"].isna().sum() == 10
+    assert set(frame["queue"].dropna()) == set(_tickets()["Team"])  # names, not ids
+    assert source["dataset"] == "owner/tickets" and source["splits"] == ["train", "unsupervised"]
+    assert fake_hub[-1] == {
+        "path": "owner/tickets",
+        "name": None,
+        "split": None,
+        "revision": None,
+        "token": None,
+    }
+
+    sampled, source = hub.fetch_table("owner/tickets", split="train", max_rows=50, token="hf_x")
+    assert len(sampled) == 50 and source == {**source, "rows": 50, "total_rows": 120}
+    assert fake_hub[-1]["split"] == "train" and fake_hub[-1]["token"] == "hf_x"
+    again, _ = hub.fetch_table("owner/tickets", split="train", max_rows=50)
+    assert again.equals(sampled)  # the sample is seeded
+
+    _, source = hub.fetch_table("owner/scripted")
+    assert source["revision"] == hub.PARQUET_BRANCH  # the Hub's Parquet copy of a script
+
+
+@pytest.mark.parametrize(
+    ("name", "message"),
+    [
+        ("../secrets", "isn't a Hugging Face dataset name"),
+        ("a b", "isn't a Hugging Face dataset name"),
+        ("owner/missing", "couldn't find the dataset owner/missing"),
+    ],
+)
+def test_hub_problems_are_explained(
+    fake_hub: list[dict[str, Any]], name: str, message: str
+) -> None:
+    with pytest.raises(TableError, match=message):
+        hub.fetch_table(name)
+
+
+def test_hub_errors_are_worded_for_people() -> None:
+    explain = hub._explain
+    assert "gated" in explain("o/d", ValueError("Dataset 'o/d' is a gated dataset on the Hub"))
+    assert "can't reach" in explain("o/d", ConnectionError("Couldn't reach 'o/d' on the Hub"))
+    assert "Subset" in explain("o/d", ValueError("Config name is missing. Pick one of: a, b"))
+    assert "no such split" in explain("o/d", ValueError('Unknown split "dev"'))
+    assert "loading script" in explain(
+        "o/d", RuntimeError("Dataset scripts are no longer supported")
+    )
+
+
+def test_hub_names_never_reach_local_files(
+    fake_hub: list[dict[str, Any]], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "tickets").mkdir()
+    with pytest.raises(TableError, match="file or folder named 'tickets'"):
+        hub.fetch_table("tickets")
+    monkeypatch.setattr(hub, "available", lambda: False)
+    with pytest.raises(TableError, match=r"heartcut\[studio\]"):
+        hub.fetch_table("owner/tickets")
+
+
 # --------------------------------------------------------------------------- web app
 
 
@@ -366,6 +474,36 @@ def test_upload_flow(studio: TestClient, monkeypatch: pytest.MonkeyPatch) -> Non
     assert form.status_code == 415  # what a cross-site form could send
     monkeypatch.setattr("heartcut.studio.app.MAX_UPLOAD_MB", 0.001)
     assert studio.post("/api/uploads?filename=a.csv", content=csv, headers=OCTET).status_code == 413
+
+
+def test_hub_upload_flow(studio: TestClient, fake_hub: list[dict[str, Any]]) -> None:
+    hub_info = studio.get("/api/catalog").json()["hub"]
+    assert hub_info["available"] and hub_info["default_rows"] == hub.DEFAULT_ROWS
+
+    response = studio.post(
+        "/api/uploads/huggingface",
+        json={"dataset": "owner/tickets", "split": "train", "token": " hf_secret "},
+    )
+    assert response.status_code == 200, response.text
+    upload = response.json()
+    assert upload["filename"] == "owner-tickets.jsonl" and upload["rows"] == 120
+    assert upload["source"]["url"] == "https://huggingface.co/datasets/owner/tickets"
+    assert upload["guess"]["label_column"] == "queue" and upload["profile"]["ready"]
+    assert fake_hub[-1]["token"] == "hf_secret"
+    assert studio.get("/api/catalog").json()["hub"]["has_token"]  # kept for this session
+
+    project = studio.post("/api/projects", json=_settings(upload["id"])).json()
+    assert project["source"]["dataset"] == "owner/tickets"
+    experiment = yaml.safe_load(Path(project["experiment_path"]).read_text(encoding="utf-8"))
+    assert "owner/tickets [train] from the Hugging Face Hub" in experiment["dataset"]["description"]
+    studio.delete(f"/api/projects/{project['id']}")
+
+    missing = studio.post("/api/uploads/huggingface", json={"dataset": "owner/missing"})
+    assert missing.status_code == 400 and "couldn't find" in missing.json()["detail"]
+    too_many = studio.post(
+        "/api/uploads/huggingface", json={"dataset": "owner/tickets", "max_rows": 10**9}
+    )
+    assert too_many.status_code == 422
 
 
 def test_drafts_can_change_until_they_run(

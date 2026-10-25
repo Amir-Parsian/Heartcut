@@ -35,7 +35,7 @@
           <a class="button primary large" href="#/new">Start a new project</a>
         </div>
         <ol class="how">
-          <li><span>1</span><div><strong>Drop your spreadsheet</strong>CSV, Excel or JSON lines</div></li>
+          <li><span>1</span><div><strong>Drop your spreadsheet</strong>CSV, Excel, JSON lines, or a Hugging Face dataset</div></li>
           <li><span>2</span><div><strong>Drag columns into place</strong>Which is the message, which the category</div></li>
           <li><span>3</span><div><strong>Pick a teacher and students</strong>Start with a free practice run</div></li>
           <li><span>4</span><div><strong>Compare and download</strong>Accuracy, speed and cost side by side</div></li>
@@ -74,6 +74,13 @@
         <p class="or-row">No data at hand?
           <button type="button" class="linkish" id="use-sample">Try it with 120 sample IT-helpdesk tickets</button>
         </p>
+        <details class="hub-box" id="hub-box">
+          <summary>Or fetch a free dataset from the Hugging Face Hub</summary>
+          <p class="muted">Thousands of sorted datasets are free to use on
+            huggingface.co/datasets. Type the name from a dataset's page; Heartcut downloads it
+            to this computer and you pick the columns in the next step, as for a spreadsheet.</p>
+          <div id="hub-form" class="options"></div>
+        </details>
         <div id="upload-summary"></div>
       </div>
 

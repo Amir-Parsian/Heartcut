@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Heartcut Studio can fetch a dataset from the Hugging Face Hub instead of an uploaded
+  file: type its name (e.g. `dair-ai/emotion`), optionally a subset, a split and a row
+  limit. Class-label ids become their names, and larger datasets are cut down to a seeded
+  random sample. Gated and private datasets work with `HF_TOKEN`, a `huggingface-cli login`
+  or a token pasted into the page (kept in memory only). A dataset that is published only
+  as a loading script is read from the Hub's Parquet copy when there is one. See
+  "Data from the Hugging Face Hub" in `docs/studio.md`.
+
 ### Changed
 - The Hugging Face Spaces demo pins `heartcut` 0.2.1 instead of `>=0.1.0`.
 

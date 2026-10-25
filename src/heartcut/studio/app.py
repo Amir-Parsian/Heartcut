@@ -25,10 +25,18 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from heartcut import __version__
 from heartcut.serve.runtime import Predictor, load_predictor
-from heartcut.studio import catalog
+from heartcut.studio import catalog, hub
 from heartcut.studio.projects import Project, Settings, Workspace
 from heartcut.studio.runner import STAGES, Busy, Runner, recover
-from heartcut.studio.tables import FORMATS, MIN_ROWS, TableError, join_columns, profile, read_table
+from heartcut.studio.tables import (
+    FORMATS,
+    MAX_ROWS,
+    MIN_ROWS,
+    TableError,
+    join_columns,
+    profile,
+    read_table,
+)
 
 STATIC = Path(__file__).parent / "static"
 LOOPBACK_HOSTS = ["127.0.0.1", "localhost", "::1", "[::1]"]
@@ -42,6 +50,15 @@ TOP_K = 3
 class ColumnChoice(BaseModel):
     text_columns: list[str] = Field(default_factory=list)
     label_column: str | None = None
+
+
+class HubRequest(BaseModel):
+    dataset: str = Field(min_length=1, max_length=200)
+    config: str | None = Field(default=None, max_length=200)
+    split: str | None = Field(default=None, max_length=200)
+    revision: str | None = Field(default=None, max_length=200)
+    max_rows: int = Field(default=hub.DEFAULT_ROWS, ge=MIN_ROWS, le=MAX_ROWS)
+    token: str | None = Field(default=None, max_length=500)
 
 
 class StartRequest(BaseModel):
@@ -142,7 +159,14 @@ def create_app(workspace: Path, *, allowed_hosts: list[str] | None = None) -> Fa
             "limits": {
                 "max_upload_mb": MAX_UPLOAD_MB,
                 "min_rows": MIN_ROWS,
+                "max_rows": MAX_ROWS,
                 "formats": sorted(FORMATS),
+            },
+            "hub": {
+                "available": hub.available(),
+                "install": hub.INSTALL,
+                "has_token": bool(keys.get(hub.TOKEN_ENV) or hub.saved_token()),
+                "default_rows": hub.DEFAULT_ROWS,
             },
             "active": runner.active,
         }
@@ -158,6 +182,14 @@ def create_app(workspace: Path, *, allowed_hosts: list[str] | None = None) -> Fa
     @app.post("/api/uploads/sample")
     def upload_sample() -> dict[str, Any]:
         return ws.describe_upload(ws.save_sample())
+
+    @app.post("/api/uploads/huggingface")
+    def upload_from_hub(request: HubRequest) -> dict[str, Any]:
+        if request.token and request.token.strip():
+            keys[hub.TOKEN_ENV] = request.token.strip()
+        options = request.model_dump(exclude={"dataset", "token"})
+        saved = ws.save_hub_dataset(request.dataset, token=keys.get(hub.TOKEN_ENV), **options)
+        return ws.describe_upload(saved)
 
     @app.post("/api/uploads/{upload_id}/profile")
     def profile_upload(upload_id: str, choice: ColumnChoice) -> dict[str, Any]:

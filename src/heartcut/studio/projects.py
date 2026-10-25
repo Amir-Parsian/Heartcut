@@ -35,7 +35,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from heartcut.artifacts import utc_now
 from heartcut.config import ExperimentConfig, load_experiment
 from heartcut.data.splits import stratified_split
-from heartcut.studio import catalog
+from heartcut.studio import catalog, hub
 from heartcut.studio.tables import (
     TableError,
     build_examples,
@@ -117,6 +117,7 @@ class Upload:
     directory: Path
     filename: str
     sample: bool = False
+    source: dict[str, Any] | None = None  # where a fetched dataset came from
 
     @property
     def path(self) -> Path:
@@ -141,7 +142,14 @@ class Workspace:
 
     # ------------------------------------------------------------------ uploads
 
-    def save_upload(self, data: bytes, filename: str, *, sample: bool = False) -> Upload:
+    def save_upload(
+        self,
+        data: bytes,
+        filename: str,
+        *,
+        sample: bool = False,
+        source: dict[str, Any] | None = None,
+    ) -> Upload:
         """Check that the file parses, then keep it (bad files are never stored)."""
         name = Path(filename).name.strip() or "upload.csv"
         frame = read_table(data, name)
@@ -150,9 +158,9 @@ class Workspace:
         directory.mkdir()
         safe = re.sub(r"[^\w.\- ]", "_", name)
         (directory / safe).write_bytes(data)
-        meta = {"filename": safe, "sample": sample, "uploaded_at": utc_now()}
+        meta = {"filename": safe, "sample": sample, "source": source, "uploaded_at": utc_now()}
         _write_json(directory / UPLOAD_FILE, meta)
-        upload = Upload(upload_id, directory, safe, sample)
+        upload = Upload(upload_id, directory, safe, sample, source)
         self._remember(upload_id, frame)
         return upload
 
@@ -160,12 +168,25 @@ class Workspace:
         sample = catalog.resource(catalog.SAMPLE_DATA)
         return self.save_upload(sample.read_bytes(), "helpdesk-tickets.jsonl", sample=True)
 
+    def save_hub_dataset(self, dataset: str, **options: Any) -> Upload:
+        """Fetch a Hugging Face Hub dataset and keep it as an upload (see :mod:`.hub`)."""
+        frame, source = hub.fetch_table(dataset, **options)
+        name = "-".join(p for p in [source["dataset"].replace("/", "-"), source["config"]] if p)
+        data = frame.to_json(orient="records", lines=True, force_ascii=False)
+        return self.save_upload(data.encode("utf-8"), f"{name}.jsonl", source=source)
+
     def upload(self, upload_id: str) -> Upload:
         directory = self.uploads_dir / _check_id(upload_id)
         if not (directory / UPLOAD_FILE).exists():
             raise KeyError(upload_id)
         meta = json.loads((directory / UPLOAD_FILE).read_text(encoding="utf-8"))
-        return Upload(upload_id, directory, str(meta["filename"]), bool(meta.get("sample")))
+        return Upload(
+            upload_id,
+            directory,
+            str(meta["filename"]),
+            bool(meta.get("sample")),
+            meta.get("source"),
+        )
 
     def frame(self, upload: Upload) -> pd.DataFrame:
         with self.lock:
@@ -196,6 +217,7 @@ class Workspace:
             "id": upload.id,
             "filename": upload.filename,
             "sample": upload.sample,
+            "source": upload.source,
             "rows": len(frame),
             "columns": describe_columns(frame),
             "preview": preview(frame),
@@ -262,7 +284,7 @@ class Workspace:
         project.data_dir.mkdir(parents=True)
         train.to_json(project.data_dir / "train.jsonl", orient="records", lines=True)
         test.to_json(project.data_dir / "test.jsonl", orient="records", lines=True)
-        experiment = build_experiment(project, settings, upload.filename, len(train))
+        experiment = build_experiment(project, settings, upload, len(train))
         project.experiment_path.write_text(
             "# Written by Heartcut Studio. Re-run it from the command line with:\n"
             f"#   heartcut run -c {project.experiment_path}\n"
@@ -276,6 +298,7 @@ class Workspace:
                 "created_at": created,
                 "updated_at": utc_now(),
                 "source_file": upload.filename,
+                "source": upload.source,
                 "settings": settings.model_dump(mode="json"),
                 "status": "draft",
                 "stage": None,
@@ -299,7 +322,7 @@ class Workspace:
 
 
 def build_experiment(
-    project: Project, settings: Settings, filename: str, train_rows: int
+    project: Project, settings: Settings, upload: Upload, train_rows: int
 ) -> dict[str, Any]:
     """The experiment config for a project, validated before it is written."""
     choice = catalog.teacher(settings.teacher)
@@ -311,7 +334,7 @@ def build_experiment(
         teacher["base_url"] = settings.local_url or teacher["base_url"]
     dataset: dict[str, Any] = {
         "name": project.id,
-        "description": f"{settings.name}: {filename}, uploaded to Heartcut Studio",
+        "description": f"{settings.name}: {_origin(upload)}",
         "task": settings.task,
         "sources": [
             {
@@ -346,6 +369,18 @@ def build_experiment(
         experiment["benchmark"] = {"latency": dict(QUICK_LATENCY)}
     ExperimentConfig.model_validate(experiment)
     return experiment
+
+
+def _origin(upload: Upload) -> str:
+    source = upload.source
+    if not source:
+        return f"{upload.filename}, uploaded to Heartcut Studio"
+    subset = f" ({source['config']})" if source.get("config") else ""
+    splits = ", ".join(map(str, source.get("splits") or []))
+    return (
+        f"{source['rows']:,} rows of {source['dataset']}{subset} [{splits}] from the Hugging "
+        f"Face Hub, {source['url']}, fetched with Heartcut Studio"
+    )
 
 
 class Project:

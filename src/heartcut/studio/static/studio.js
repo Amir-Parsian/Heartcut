@@ -170,6 +170,12 @@ function freshWizard() {
     maxTrain: "",
     localModel: "",
     localUrl: "",
+    hubDataset: "",
+    hubConfig: "",
+    hubSplit: "",
+    hubRows: "",
+    hubToken: "",
+    hubBusy: false,
     students: ["tfidf-logreg"],
     thorough: false,
     draft: null,
@@ -390,7 +396,7 @@ function markDirty() {
 
 function stepError(step) {
   const w = S.wiz;
-  if (step === 0) return w.upload ? "" : "Drop a spreadsheet, or use the sample tickets, to continue.";
+  if (step === 0) return w.upload ? "" : "Drop a spreadsheet, fetch a dataset or use the sample tickets to continue.";
   if (step === 1) {
     if (!w.profile) return "Still checking your columns...";
     if (!w.profile.ready) return w.profile.errors[0] || "Fix the columns first.";
@@ -445,6 +451,7 @@ function nextStep() {
 function renderDataStep() {
   const u = S.wiz.upload;
   const box = $("#upload-summary");
+  renderHubForm();
   if (!u) {
     box.replaceChildren();
     return;
@@ -455,7 +462,7 @@ function renderDataStep() {
       "div",
       { class: "file-card" },
       icon("file"),
-      h("div", { class: "grow" }, h("div", { class: "name" }, u.filename), h("div", { class: "meta" }, `${fmt.int(u.rows)} rows, ${columns.length} columns`)),
+      h("div", { class: "grow" }, h("div", { class: "name" }, u.source ? sourceTitle(u.source) : u.filename), h("div", { class: "meta" }, uploadMeta(u, columns.length))),
       h("span", { class: "pill done" }, "Looks good"),
     ),
     h(
@@ -470,6 +477,115 @@ function renderDataStep() {
     ),
     h("p", { class: "footnote" }, `The first ${u.preview.length} rows. Press Next to tell Heartcut which column is which.`),
   );
+}
+
+function sourceTitle(source) {
+  return `${source.dataset}${source.config ? ` (${source.config})` : ""} from Hugging Face`;
+}
+
+function uploadMeta(u, columns) {
+  const meta = `${fmt.int(u.rows)} rows, ${columns} columns`;
+  const s = u.source;
+  if (!s) return meta;
+  const sampled = s.total_rows > s.rows ? `, a random ${fmt.int(s.rows)} of its ${fmt.int(s.total_rows)}` : "";
+  return h("span", {}, `${meta}. Splits: ${s.splits.join(", ")}${sampled}. `, h("a", { href: s.url, target: "_blank", rel: "noopener noreferrer" }, "Dataset page"));
+}
+
+// Suggestions that load with current versions of the datasets library (Parquet files).
+const HUB_EXAMPLES = [
+  { dataset: "dair-ai/emotion", what: "tweets, 6 emotions" },
+  { dataset: "fancyzhx/ag_news", what: "news headlines, 4 topics" },
+];
+
+function renderHubForm() {
+  const w = S.wiz;
+  const hub = S.catalog.hub;
+  const form = $("#hub-form");
+  if (!hub.available) {
+    form.replaceChildren(callout("warn", "One more package needed", `Fetching datasets needs the datasets package: ${hub.install}`));
+    return;
+  }
+  const fetchButton = h("button", { type: "button", class: "button primary", disabled: w.hubBusy, onclick: fetchHubDataset }, w.hubBusy ? "Fetching..." : "Fetch dataset");
+  form.replaceChildren(
+    h(
+      "div",
+      { class: "field-row" },
+      h(
+        "label",
+        { class: "field grow" },
+        h("span", {}, "Dataset name"),
+        boundInput({ placeholder: "owner/name, e.g. dair-ai/emotion", autocomplete: "off", spellcheck: "false" }, "hubDataset"),
+        h(
+          "small",
+          {},
+          "Try ",
+          ...HUB_EXAMPLES.flatMap((e, i) => [
+            i ? " or " : "",
+            h("button", { type: "button", class: "linkish", onclick: () => pickHubExample(e) }, e.dataset),
+            ` (${e.what})`,
+          ]),
+          ".",
+        ),
+      ),
+      field("Subset", boundInput({ placeholder: "default", autocomplete: "off", spellcheck: "false" }, "hubConfig"), "Only if the dataset has several."),
+      field("Split", boundInput({ placeholder: "all splits", autocomplete: "off", spellcheck: "false" }, "hubSplit"), "e.g. train. Empty takes them all."),
+    ),
+    h(
+      "div",
+      { class: "field-row" },
+      field(
+        "Most rows",
+        boundInput({ type: "number", min: String(S.catalog.limits.min_rows), max: String(S.catalog.limits.max_rows), step: "1000", placeholder: fmt.int(hub.default_rows), inputmode: "numeric" }, "hubRows"),
+        "A random sample if it has more.",
+      ),
+      hub.has_token
+        ? null
+        : h(
+            "label",
+            { class: "field grow" },
+            h("span", {}, "Hugging Face access token (optional)"),
+            boundInput({ type: "password", autocomplete: "off", placeholder: "hf_...", spellcheck: "false" }, "hubToken"),
+            h("small", {}, "Only for gated or private datasets. Create a read token at huggingface.co/settings/tokens. The studio keeps it in memory on this computer only."),
+          ),
+    ),
+    h("div", { class: "hub-actions" }, fetchButton, h("span", { class: "muted" }, hub.has_token ? "Using the Hugging Face token found on this computer." : "Public datasets need no account.")),
+  );
+}
+
+function pickHubExample(example) {
+  const w = S.wiz;
+  w.hubDataset = example.dataset;
+  w.hubConfig = "";
+  w.hubSplit = "";
+  renderHubForm();
+}
+
+async function fetchHubDataset() {
+  const w = S.wiz;
+  const dataset = w.hubDataset.trim();
+  if (!dataset) {
+    toast("Type the name of a dataset first, such as dair-ai/emotion.", "bad");
+    return;
+  }
+  w.hubBusy = true;
+  renderHubForm();
+  try {
+    const upload = await api.post("/api/uploads/huggingface", {
+      dataset,
+      config: w.hubConfig.trim() || null,
+      split: w.hubSplit.trim() || null,
+      max_rows: w.hubRows === "" ? S.catalog.hub.default_rows : Number(w.hubRows),
+      token: w.hubToken.trim() || null,
+    });
+    if (w.hubToken.trim()) S.catalog.hub.has_token = true;
+    w.hubToken = "";
+    acceptUpload(upload);
+  } catch (err) {
+    toast(err.message, "bad");
+  } finally {
+    w.hubBusy = false;
+    if (S.wiz === w && w.step === 0) renderHubForm();
+  }
 }
 
 async function sendDataFile(file) {
@@ -507,7 +623,7 @@ function acceptUpload(upload) {
   w.text = [...upload.guess.text_columns];
   w.label = upload.guess.label_column;
   w.profile = upload.profile;
-  w.name = niceName(upload.filename);
+  w.name = niceName(upload.source ? upload.source.dataset.split("/").pop() : upload.filename);
   w.task = upload.task || w.task;
   w.maxStep = Math.max(w.maxStep, 1);
   markDirty();

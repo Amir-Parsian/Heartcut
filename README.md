@@ -36,8 +36,8 @@ heartcut studio            # opens http://127.0.0.1:8765 in your browser
 ```
 
 Heartcut Studio is the same pipeline as a drag-and-drop web app that runs on your
-computer. Drop in a spreadsheet (CSV, Excel or JSON lines) and drag its columns onto
-*message* and *category*. Then pick a teacher (a free practice run, Claude or a local
+computer. Drop in a spreadsheet (CSV, Excel or JSON lines), or fetch a free dataset from
+the Hugging Face Hub by name, and drag its columns onto *message* and *category*. Then pick a teacher (a free practice run, Claude or a local
 model) and drag the students you want to compare into a line-up. It labels, trains and
 benchmarks with a progress view. When it finishes you can try the winner, use it to sort
 a whole spreadsheet, or download it. See the [Studio guide](docs/studio.md).
